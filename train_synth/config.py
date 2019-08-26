@@ -4,7 +4,7 @@ Config containing all hardcoded parameters for training strong supervised model 
 
 num_cuda = "0"
 seed = 0
-save_path = './mode'
+save_path = './model'
 use_cuda = False
 
 batch_size = {
