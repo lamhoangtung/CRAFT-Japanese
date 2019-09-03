@@ -3,3 +3,4 @@ model/*
 input/*
 *.pyc
 Temporary/*
+logs/
