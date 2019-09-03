@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import random
 
 from src.generic_model import Criterian
-from .dataloader import DataLoaderSYNTH
+from .dataloader import DataLoader_JPN_SYNTH
 from src.utils.data_manipulation import denormalize_mean_variance
 import train_synth.config as config
 from src.utils.parallel import DataParallelModel, DataParallelCriterion
@@ -37,7 +37,7 @@ def save(data, output, target, target_affinity, no):
 
 	batch_size = output.shape[0]
 
-	base = config.DataLoaderSYNTH_Train_Synthesis+str(no)+'/'
+	base = config.DataLoader_JPN_SYNTH_Train_Synthesis+str(no)+'/'
 
 	os.makedirs(base, exist_ok=True)
 
@@ -242,7 +242,7 @@ def main():
 
 	print('Loading the dataloader')
 
-	train_dataloader = DataLoaderSYNTH('train')
+	train_dataloader = DataLoader_JPN_SYNTH('train')
 	train_dataloader = DataLoader(
 		train_dataloader, batch_size=config.batch_size['train'],
 		shuffle=True, num_workers=config.num_workers['train'])

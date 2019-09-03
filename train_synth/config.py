@@ -3,7 +3,9 @@ Config containing all hardcoded parameters for training strong supervised model 
 """
 from config import *
 
-num_cuda = "0,1,2,3"
+DataLoader_JPN_SYNTH_dataset_path = '/mnt/data/linus/SynthText/results/linus_JPN_2.h5'
+
+num_cuda = "4"
 save_path = './model'
 use_cuda = True
 
@@ -17,9 +19,9 @@ num_workers = {
 	'test': 16
 }
 
-pretrained = True
-pretrained_path = '/home/SharedData/Mayank/Models/SYNTH/63000_model.pkl'
-pretrained_loss_plot_training = '/home/SharedData/Mayank/Models/SYNTH/loss_plot_training.npy'
+pretrained = False
+pretrained_path = './model/63000_model.pkl'
+pretrained_loss_plot_training = './logs/loss_plot_training.npy'
 
 lr = {
 	1: 1e-4,

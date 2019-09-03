@@ -1,5 +1,6 @@
 import click
 import os
+os.environ["CUDA_VISIBLE_DEVICES"]="4"
 import torch
 import numpy as np
 import random
