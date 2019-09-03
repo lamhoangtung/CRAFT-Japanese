@@ -14,8 +14,8 @@ batch_size = {
 }
 
 num_workers = {
-	'train': 16,
-	'test': 16
+	'train': 1,
+	'test': 1
 }
 
 pretrained = False

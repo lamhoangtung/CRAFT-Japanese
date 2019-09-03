@@ -19,7 +19,7 @@ class DataLoader_JPN_SYNTH(data.Dataset):
             DataLoader for strong supervised training on Japanese Synth-Text
     """
 
-    DEBUG = True  # True if you want to run on small set (1000 sample)
+    DEBUG = False  # True if you want to run on small set (1000 sample)
 
     def __init__(self, type_):
 
@@ -46,14 +46,23 @@ class DataLoader_JPN_SYNTH(data.Dataset):
     def __getitem__(self, index):
 
         index = index % len(self.imnames)
-        sample = self.raw_dataset['data'][self.imnames[index]]
+        try:
+            sample = self.raw_dataset['data'][self.imnames[index]]
+        except Exception as ex:
+            print('Exeption:', ex)
+            print('At index:', index)
+            print('Sample id:', self.imnames[index])
+            print('WARNING: h5py do not support index from multiple thread, please use num_worker=0')
+            exit(0)
         image = sample[()]
         charBB = sample.attrs['charBB']
         txt = [each.decode('utf-8') for each in sample.attrs['txt']]
         all_words = []
         for line in txt:
-            all_words += line.strip().split()
-
+            all_words.append(line.strip().split())
+        # print('--------')
+        # print(all_words)
+        # print('--------')
         # if len(image.shape) == 2:
         # 	image = np.repeat(image[:, :, None], repeats=3, axis=2)
         # elif image.shape[2] == 1:
