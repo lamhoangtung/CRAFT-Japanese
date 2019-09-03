@@ -47,12 +47,12 @@ class DataLoader_JPN_SYNTH(data.Dataset):
 
         index = index % len(self.imnames)
         sample = self.raw_dataset['data'][self.imnames[index]]
-        image = sample.value
+        image = sample[()]
         charBB = sample.attrs['charBB']
-        txt = sample.attrs['txt']
+        txt = [each.decode('utf-8') for each in sample.attrs['txt']]
         all_words = []
-        for each in txt:
-            all_words += [k for k in ' '.join(each)]
+        for line in txt:
+            all_words += line.strip().split()
 
         # if len(image.shape) == 2:
         # 	image = np.repeat(image[:, :, None], repeats=3, axis=2)
