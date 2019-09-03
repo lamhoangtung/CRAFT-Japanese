@@ -3,7 +3,6 @@ Config containing all hardcoded parameters for training strong supervised model 
 """
 from config import *
 
-DataLoader_JPN_SYNTH_dataset_path = '/mnt/data/linus/SynthText/results/linus_JPN_2.h5'
 
 num_cuda = "4"
 save_path = './model'

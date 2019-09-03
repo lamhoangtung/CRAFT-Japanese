@@ -4,6 +4,8 @@ dataset_name = 'ICDAR2013_ICDAR2017'
 test_dataset_name = 'ICDAR2013'
 
 DataLoader_JPN_SYNTH_dataset_path = '/mnt/data/linus/SynthText/results/linus_JPN_2.h5'
+DataLoader_JPN_SYNTH_Train_Synthesis = '/mnt/data/linus/CRAFT-Remade/logs/train_synthesis/'
+
 
 DataLoaderSYNTH_base_path = '/home/SharedData/Mayank/SynthText/Images'
 DataLoaderSYNTH_mat = '/home/SharedData/Mayank/SynthText/gt.mat'
