@@ -207,10 +207,11 @@ def add_affinity(image, bbox_1, bbox_2):
 
 	if (not Polygon(bbox_1.reshape([4, 2]).astype(np.int32)).is_valid) or (
 			not Polygon(bbox_2.reshape([4, 2]).astype(np.int32)).is_valid):
+		print('Found an invalid polygon', bbox_1, 'and', bbox_2)
 		return image
 
-	bbox_1 = order_points(bbox_1)
-	bbox_2 = order_points(bbox_2)
+	# bbox_1 = order_points(bbox_1)
+	# bbox_2 = order_points(bbox_2)
 
 	center_1, center_2 = np.mean(bbox_1, axis=0), np.mean(bbox_2, axis=0)
 	tl = np.mean([bbox_1[0], bbox_1[1], center_1], axis=0)
