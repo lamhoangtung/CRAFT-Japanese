@@ -58,18 +58,30 @@ class DataLoader_JPN_SYNTH(data.Dataset):
         charBB = sample.attrs['charBB']
         txt = [each.decode('utf-8') for each in sample.attrs['txt']]
         # print(txt)
+        # Handle line-break
         all_words = []
         for line in txt:
             if '\n' in line:
                 all_words.extend(line.split('\n'))
             else:
                 all_words.append(line)
+        # Remove blank word
         for index, line in enumerate(all_words):
             all_words[index] = [word for word in line.strip().split(' ')
                             if word not in ['', ' ']]
+        # Split word to char
+        for index, line in enumerate(all_words):
+            new_line = []
+            for word in line:
+                if len(word) >=2:
+                    new_line.extend([char for char in word])
+                else:
+                    new_line.append(word)
+            all_words[index] = new_line
         # print('--------')
         # print(all_words)
         # print('--------')
+
         # if len(image.shape) == 2:
         # 	image = np.repeat(image[:, :, None], repeats=3, axis=2)
         # elif image.shape[2] == 1:
