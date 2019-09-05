@@ -4,3 +4,6 @@ input/*
 *.pyc
 Temporary/*
 logs/
+*.h5
+*.pkl
+debug/
