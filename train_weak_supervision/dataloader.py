@@ -10,7 +10,6 @@ from src.utils.data_manipulation import resize, resize_generated, normalize_mean
 from src.utils.data_manipulation import generate_affinity, generate_target, generate_target_others
 
 
-DEBUG = False
 
 
 class DataLoaderMIX_JPN(data.Dataset):
@@ -19,81 +18,38 @@ class DataLoaderMIX_JPN(data.Dataset):
             Dataloader to train weak-supervision providing a mix of SynthText JPN and the Datapile's dataset
     """
 
+    self.DEBUG = False
 
     def __init__(self, type_, iteration):
 
         self.type_ = type_
-        self.base_path_synth = config.DataLoaderSYNTH_base_path
+        self.dataset_path = config.DataLoader_JPN_SYNTH_dataset_path
+        self.raw_dataset = h5py.File(self.dataset_path, 'r')
+        self.ids = self.__get_list_id__()
         self.base_path_other_images = config.Other_Dataset_Path + '/Images/' + type_
         self.base_path_other_gt = config.Other_Dataset_Path + \
             '/Generated/' + str(iteration)
 
         if config.prob_synth != 0:
+            if self.DEBUG:
+                self.ids = self.ids[:1000]
 
-            print('Loading Synthetic dataset')
+            total_number = len(self.ids)
+            train_images = int(total_number * 0.9)
+            print('Training with', train_images, 'images')
 
-            if DEBUG:  # Make this True if you want to do a run on small set of Synth-Text
-                if not os.path.exists('cache.pkl'):
-
-                    # Create cache of 1000 samples if it does not exist
-
-                    with open('cache.pkl', 'wb') as f:
-                        import pickle
-                        from scipy.io import loadmat
-                        mat = loadmat(config.DataLoaderSYNTH_mat)
-                        pickle.dump([mat['imnames'][0][0:1000], mat['charBB']
-                                     [0][0:1000], mat['txt'][0][0:1000]], f)
-                        print('Created the pickle file, rerun the program')
-                        exit(0)
-                else:
-
-                    # Read the Cache
-
-                    with open('cache.pkl', 'rb') as f:
-                        import pickle
-                        self.imnames, self.charBB, self.txt = pickle.load(f)
-                        print('Loaded DEBUG')
-
+            if self.type_ == 'train':
+                self.imnames = self.ids[:train_images]
             else:
+                self.imnames = self.ids[train_images:]
 
-                from scipy.io import loadmat
-                # Loads MATLAB .mat extension as a dictionary of numpy arrays
-                mat = loadmat(config.DataLoaderSYNTH_mat)
-
-                # Read documentation of how synth-text dataset is stored to understand the processing at
-                # http://www.robots.ox.ac.uk/~vgg/data/scenetext/readme.txt
-
-                total_number = mat['imnames'][0].shape[0]
-                train_images = int(total_number * 0.9)
-
-                if self.type_ == 'train':
-
-                    self.imnames = mat['imnames'][0][0:train_images]
-                    # number of images, 2, 4, num_character
-                    self.charBB = mat['charBB'][0][0:train_images]
-                    self.txt = mat['txt'][0][0:train_images]
-
-                else:
-
-                    self.imnames = mat['imnames'][0][train_images:]
-                    # number of images, 2, 4, num_character
-                    self.charBB = mat['charBB'][0][train_images:]
-                    self.txt = mat['txt'][0][train_images:]
-
-            for no, i in enumerate(self.txt):
-                all_words = []
-                for j in i:
-                    all_words += [k for k in ' '.join(
-                        j.split('\n')).split() if k != '']
-                    # Getting all words given paragraph like text in SynthText
-
-                self.txt[no] = all_words
-
-        self.gt = []
 
         for i in sorted(os.listdir(self.base_path_other_gt)):
             with open(self.base_path_other_gt+'/'+i, 'r') as f:
                 self.gt.append([i[:-5], json.load(f)])
+
+    def __get_list_id__(self):
+        return [file_id for file_id in self.raw_dataset['data']]
 
     def __getitem__(self, item_i):
 
@@ -104,23 +60,38 @@ class DataLoaderMIX_JPN(data.Dataset):
         if check < config.prob_synth and self.type_ == 'train':
             # probability of picking a Synth-Text image vs Image from dataset
 
-            random_item = np.random.randint(len(self.imnames))
+            random_item = np.random.choice(self.imnames)
+            sample = self.raw_dataset['data'][random_item]
+            image = sample[()]
+            charBB = sample.attrs['charBB']
+            txt = [each.decode('utf-8') for each in sample.attrs['txt']]
+            # print(txt)
+            # Handle line-break
+            all_words = []
+            for line in txt:
+                if '\n' in line:
+                    all_words.extend(line.split('\n'))
+                else:
+                    all_words.append(line)
+            # Remove blank word
+            for index, line in enumerate(all_words):
+                all_words[index] = [word for word in line.strip().split(' ')
+                                if word not in ['', ' ']]
+            # Split word to char
+            for index, line in enumerate(all_words):
+                new_line = []
+                for word in line:
+                    if len(word) >=2:
+                        new_line.extend([char for char in word])
+                    else:
+                        new_line.append(word)
+                all_words[index] = new_line
+            # print('--------')
+            # print(all_words)
+            # print('--------')
 
-            character = self.charBB[random_item].copy()
-
-            image = plt.imread(self.base_path_synth+'/' +
-                               self.imnames[random_item][0])  # Read the image
-
-            if len(image.shape) == 2:
-                image = np.repeat(image[:, :, None], repeats=3, axis=2)
-            elif image.shape[2] == 1:
-                image = np.repeat(image, repeats=3, axis=2)
-            else:
-                image = image[:, :, 0: 3]
-
-            height, width, channel = image.shape
             # Resize the image to (768, 768)
-            image, character = resize(image, character)
+            image, character = resize(image, charBB.copy())
             image = normalize_mean_variance(image).transpose(2, 0, 1)
 
             # Generate character heatmap with weights
@@ -130,7 +101,7 @@ class DataLoaderMIX_JPN(data.Dataset):
             # Generate affinity heatmap with weights
             weight_affinity, weak_supervision_affinity = generate_affinity(
                 image.shape, character.copy(),
-                self.txt[random_item].copy(),
+                all_words.copy(),
                 weight=1)
 
             dataset_name = 'SYNTH'
