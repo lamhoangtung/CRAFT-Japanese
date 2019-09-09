@@ -19,7 +19,7 @@ def preprocess_datapile(base_path, output_name):
     all_annots = {'unknown': '###', 'annots': {}}
 
     for sample in raw_dataset:
-        image_name = sample['image_path'].split('/')[-1].replace('.jpg', '')
+        image_name = sample['image_path'] # .split('/')[-1].replace('.jpg', '')
         all_annots['annots'][image_name] = {}
         # print(os.path.join(base_path, 'images', sample['image_path']))
         height, width, _ = cv2.imread(os.path.join(

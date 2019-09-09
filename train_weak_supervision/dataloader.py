@@ -378,7 +378,7 @@ class DataLoaderEvalOther_Datapile(data.Dataset):
             config.Other_Dataset_Path, type_, 'images')
 
         with open(os.path.join(config.Other_Dataset_Path, type_, '{}_gt.json'.format(self.type_)), 'r') as f:
-            self.gt = json.loads(f)
+            self.gt = json.load(f)
 
         self.imnames = sorted(self.gt['annots'].keys())
         self.unknown = self.gt['unknown']
@@ -389,7 +389,6 @@ class DataLoaderEvalOther_Datapile(data.Dataset):
         :param item:
         :return:
         """
-
         image = plt.imread(os.path.join(self.base_path, self.imnames[item]))
 
         if len(image.shape) == 2:
