@@ -194,17 +194,22 @@ def pre_process(dataset):
 		if \
 			config.dataset_pre_process[dataset]['train']['base_path'] is None or \
 			config.dataset_pre_process[dataset]['train']['target_json_name'] is None or \
-			config.dataset_pre_process[dataset]['test']['target_json_path'] is None or \
-			config.dataset_pre_process[dataset]['test']['target_folder_path'] is None:
+			config.dataset_pre_process[dataset]['test']['base_path'] is None or \
+			config.dataset_pre_process[dataset]['test']['target_json_name'] is None:
 			print(
 				'Change the config.py file. '
 				'Add the path to the output json file and the target folder path. Detailed instructions in ReadMe.md')
 		else:
-			from src.utils.data_structure_datapile import datapile_train
+			from src.utils.data_structure_datapile import preprocess_datapile
 
-			datapile_train(
+			preprocess_datapile(
 				config.dataset_pre_process[dataset]['train']['base_path'],
 				config.dataset_pre_process[dataset]['train']['target_json_name']
+			)
+
+			preprocess_datapile(
+				config.dataset_pre_process[dataset]['test']['base_path'],
+				config.dataset_pre_process[dataset]['test']['target_json_name']
 			)
 
 

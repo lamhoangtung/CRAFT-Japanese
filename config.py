@@ -49,11 +49,11 @@ dataset_pre_process = {
 	'datapile': {
 		'train': {
 			'target_json_name': 'train_gt.json',
-			'base_path': './input/datapile/',
+			'base_path': './input/datapile/train/',
 		},
 		'test': {
-			'target_json_path': None,
-			'target_folder_path': None,
+			'target_json_name': 'test_gt.json',
+			'base_path': './input/datapile/test/',
 		}
 	}
 }

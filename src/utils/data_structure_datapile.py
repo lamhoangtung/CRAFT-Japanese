@@ -4,7 +4,7 @@ import os
 import cv2
 
 
-def datapile_train(
+def preprocess_datapile(
         base_path='./input/datapile/',
         output_path='train_gt.json'):
     """
@@ -35,4 +35,4 @@ def datapile_train(
 
 
 if __name__ == "__main__":
-    datapile_train()
+    preprocess_datapile()
