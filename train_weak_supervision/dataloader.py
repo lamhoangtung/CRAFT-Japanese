@@ -1,15 +1,16 @@
-from torch.utils import data
+import json
+import os
+
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
-import os
-import json
+from torch.utils import data
 
 import train_weak_supervision.config as config
-from src.utils.data_manipulation import resize, resize_generated, normalize_mean_variance
-from src.utils.data_manipulation import generate_affinity, generate_target, generate_target_others
-
-
+from src.utils.data_manipulation import (generate_affinity, generate_target,
+                                         generate_target_others,
+                                         normalize_mean_variance, resize,
+                                         resize_generated)
 
 
 class DataLoaderMIX_JPN(data.Dataset):
@@ -18,16 +19,16 @@ class DataLoaderMIX_JPN(data.Dataset):
             Dataloader to train weak-supervision providing a mix of SynthText JPN and the Datapile's dataset
     """
 
-    self.DEBUG = False
-
     def __init__(self, type_, iteration):
-
+        self.DEBUG = False
         self.type_ = type_
         self.dataset_path = config.DataLoader_JPN_SYNTH_dataset_path
         self.raw_dataset = h5py.File(self.dataset_path, 'r')
         self.ids = self.__get_list_id__()
-        self.base_path_other_images = os.path.join(config.Other_Dataset_Path, type_, 'images')
-        self.base_path_other_gt = os.path.join(config.Other_Dataset_Path,'Generated', str(iteration))
+        self.base_path_other_images = os.path.join(
+            config.Other_Dataset_Path, type_, 'images')
+        self.base_path_other_gt = os.path.join(
+            config.Other_Dataset_Path, 'Generated', str(iteration))
 
         if config.prob_synth != 0:
             if self.DEBUG:
@@ -76,12 +77,12 @@ class DataLoaderMIX_JPN(data.Dataset):
             # Remove blank word
             for index, line in enumerate(all_words):
                 all_words[index] = [word for word in line.strip().split(' ')
-                                if word not in ['', ' ']]
+                                    if word not in ['', ' ']]
             # Split word to char
             for index, line in enumerate(all_words):
                 new_line = []
                 for word in line:
-                    if len(word) >=2:
+                    if len(word) >= 2:
                         new_line.extend([char for char in word])
                     else:
                         new_line.append(word)
@@ -110,7 +111,8 @@ class DataLoaderMIX_JPN(data.Dataset):
         else:
 
             random_item = np.random.randint(len(self.gt))
-            image = plt.imread(os.path.join(self.base_path_other_images, self.gt[random_item][0]))  # Read the image
+            image = plt.imread(os.path.join(
+                self.base_path_other_images, self.gt[random_item][0]))  # Read the image
 
             if len(image.shape) == 2:
                 image = np.repeat(image[:, :, None], repeats=3, axis=2)
@@ -371,7 +373,8 @@ class DataLoaderEvalOther_Datapile(data.Dataset):
     def __init__(self, type_):
 
         self.type_ = type_
-        self.base_path = os.path.join(config.Other_Dataset_Path, type_, 'images')
+        self.base_path = os.path.join(
+            config.Other_Dataset_Path, type_, 'images')
 
         with open(os.path.join(self.base_path, '{}_gt.json'.format(self.type_), 'r')) as f:
             self.gt = json.loads(f)
