@@ -371,7 +371,7 @@ def main(
 
 def generator_(base_target_path, model_path=None, model=None):
 
-	from train_weak_supervision.dataloader import DataLoaderEvalOther
+	from train_weak_supervision.dataloader import DataLoaderEvalOther_Datapile
 
 	"""
 	Generator function to generate weighted heat-maps for weak-supervision training
@@ -399,7 +399,7 @@ def generator_(base_target_path, model_path=None, model=None):
 
 	# Dataloader to pre-process images given in the dataset and provide annotations to generate weight
 
-	infer_dataloader = DataLoaderEvalOther('train')
+	infer_dataloader = DataLoaderEvalOther_Datapile('train')
 
 	infer_dataloader = DataLoader(
 		infer_dataloader, batch_size=config.batch_size['test'],
