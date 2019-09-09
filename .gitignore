@@ -7,3 +7,4 @@ logs/
 *.h5
 *.pkl
 debug/
+.DS_Store
