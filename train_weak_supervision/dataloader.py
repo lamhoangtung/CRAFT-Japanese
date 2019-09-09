@@ -26,9 +26,8 @@ class DataLoaderMIX_JPN(data.Dataset):
         self.dataset_path = config.DataLoader_JPN_SYNTH_dataset_path
         self.raw_dataset = h5py.File(self.dataset_path, 'r')
         self.ids = self.__get_list_id__()
-        self.base_path_other_images = config.Other_Dataset_Path + '/Images/' + type_
-        self.base_path_other_gt = config.Other_Dataset_Path + \
-            '/Generated/' + str(iteration)
+        self.base_path_other_images = os.path.join(config.Other_Dataset_Path, type_, 'images')
+        self.base_path_other_gt = os.path.join(config.Other_Dataset_Path,'Generated', str(iteration))
 
         if config.prob_synth != 0:
             if self.DEBUG:
@@ -43,6 +42,7 @@ class DataLoaderMIX_JPN(data.Dataset):
             else:
                 self.imnames = self.ids[train_images:]
 
+        self.gt = []
 
         for i in sorted(os.listdir(self.base_path_other_gt)):
             with open(self.base_path_other_gt+'/'+i, 'r') as f:
@@ -110,8 +110,7 @@ class DataLoaderMIX_JPN(data.Dataset):
         else:
 
             random_item = np.random.randint(len(self.gt))
-            image = plt.imread(self.base_path_other_images+'/' +
-                               self.gt[random_item][0])  # Read the image
+            image = plt.imread(os.path.join(self.base_path_other_images, self.gt[random_item][0]))  # Read the image
 
             if len(image.shape) == 2:
                 image = np.repeat(image[:, :, None], repeats=3, axis=2)
@@ -151,7 +150,7 @@ class DataLoaderMIX_JPN(data.Dataset):
                 image.shape, affinity.copy(), weights.copy())
 
             # Get original word_bbox annotations
-            dataset_name = 'ICDAR'
+            dataset_name = 'datapile'
 
         return \
             image.astype(np.float32), \
@@ -361,6 +360,58 @@ class DataLoaderMIX(data.Dataset):
         else:
 
             return len(self.gt)
+
+
+class DataLoaderEvalOther_Datapile(data.Dataset):
+
+    """
+            Datapile dataloader
+    """
+
+    def __init__(self, type_):
+
+        self.type_ = type_
+        self.base_path = os.path.join(config.Other_Dataset_Path, type_, 'images')
+
+        with open(os.path.join(self.base_path, '{}_gt.json'.format(self.type_), 'r')) as f:
+            self.gt = json.loads(f)
+
+        self.imnames = sorted(self.gt['annots'].keys())
+        self.unknown = self.gt['unknown']
+
+    def __getitem__(self, item):
+        """
+        Function to read, resize and pre-process the image from the datapile dataset
+        :param item:
+        :return:
+        """
+
+        image = plt.imread(os.path.join(self.base_path, self.imnames[item]))
+
+        if len(image.shape) == 2:
+            image = np.repeat(image[:, :, None], repeats=3, axis=2)
+        elif image.shape[2] == 1:
+            image = np.repeat(image, repeats=3, axis=2)
+        else:
+            image = image[:, :, 0: 3]
+
+        height, width, channel = image.shape
+        max_side = max(height, width)
+        new_resize = (int(width / max_side * 768),
+                      int(height / max_side * 768))
+        image = cv2.resize(image, new_resize)
+
+        big_image = np.ones([768, 768, 3], dtype=np.float32) * np.mean(image)
+        big_image[
+            (768 - image.shape[0]) // 2: (768 - image.shape[0]) // 2 + image.shape[0],
+            (768 - image.shape[1]) // 2: (768 - image.shape[1]) // 2 + image.shape[1]] = image
+        big_image = normalize_mean_variance(big_image).transpose(2, 0, 1)
+
+        return big_image.astype(np.float32), self.imnames[item], np.array([height, width]), item
+
+    def __len__(self):
+
+        return len(self.imnames)
 
 
 class DataLoaderEvalOther(data.Dataset):
