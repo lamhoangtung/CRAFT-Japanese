@@ -2,6 +2,7 @@ import json
 import os
 
 import cv2
+import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 from torch.utils import data
@@ -28,7 +29,7 @@ class DataLoaderMIX_JPN(data.Dataset):
         self.base_path_other_images = os.path.join(
             config.Other_Dataset_Path, type_, 'images')
         self.base_path_other_gt = os.path.join(
-            config.Other_Dataset_Path, 'Generated', str(iteration))
+            config.Other_Dataset_Path, 'generated', str(iteration))
 
         if config.prob_synth != 0:
             if self.DEBUG:
@@ -376,7 +377,7 @@ class DataLoaderEvalOther_Datapile(data.Dataset):
         self.base_path = os.path.join(
             config.Other_Dataset_Path, type_, 'images')
 
-        with open(os.path.join(self.base_path, '{}_gt.json'.format(self.type_), 'r')) as f:
+        with open(os.path.join(self.base_path, '{}_gt.json'.format(self.type_)), 'r') as f:
             self.gt = json.loads(f)
 
         self.imnames = sorted(self.gt['annots'].keys())
