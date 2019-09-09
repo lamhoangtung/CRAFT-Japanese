@@ -81,7 +81,7 @@ def weak_supervision(model, iterations):
 		4) Saving the final model	
 	"""
 
-	skip_iterations = [0]
+	skip_iterations = []
 
 	for iteration in range(int(iterations)):
 
