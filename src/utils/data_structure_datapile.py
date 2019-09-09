@@ -4,9 +4,7 @@ import os
 import cv2
 
 
-def preprocess_datapile(
-        base_path='./input/datapile/',
-        output_path='train_gt.json'):
+def preprocess_datapile(base_path, output_name):
     """
     This function converts the Datapile images to the format which we need
     to train our weak supervision model.
@@ -30,7 +28,7 @@ def preprocess_datapile(
         all_annots['annots'][image_name]['bbox'] = line_bb
         all_annots['annots'][image_name]['text'] = sample['label']
 
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(os.path.join(base_path, output_name), 'w', encoding='utf-8') as f:
         json.dump(all_annots, f, ensure_ascii=False, indent=4)
 
 
