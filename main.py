@@ -137,7 +137,7 @@ def synthesize(model, folder):
 @click.option('-dataset', '--dataset', help='name of the dataset you want to pre-process(IC13, IC15)', required=True)
 def pre_process(dataset):
 
-	valid_choice = ['ic13', 'ic15']
+	valid_choice = ['ic13', 'ic15', 'datapile']
 	if dataset.lower() not in valid_choice:
 		print('Invalid Dataset', dataset.lower(), ', currently available:', valid_choice)
 		exit()
@@ -187,6 +187,24 @@ def pre_process(dataset):
 			icdar2015_train(
 				config.dataset_pre_process['ic15']['train']['target_folder_path'],
 				config.dataset_pre_process['ic15']['train']['target_json_path']
+			)
+	elif dataset.lower() == 'datapile':
+		import config
+
+		if \
+			config.dataset_pre_process[dataset]['train']['base_path'] is None or \
+			config.dataset_pre_process[dataset]['train']['target_json_name'] is None or \
+			config.dataset_pre_process[dataset]['test']['target_json_path'] is None or \
+			config.dataset_pre_process[dataset]['test']['target_folder_path'] is None:
+			print(
+				'Change the config.py file. '
+				'Add the path to the output json file and the target folder path. Detailed instructions in ReadMe.md')
+		else:
+			from src.utils.data_structure_datapile import datapile_train
+
+			datapile_train(
+				config.dataset_pre_process[dataset]['train']['base_path'],
+				config.dataset_pre_process[dataset]['train']['target_json_name']
 			)
 
 
