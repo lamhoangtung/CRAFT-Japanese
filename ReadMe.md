@@ -1,11 +1,10 @@
 # Re-Implementing CRAFT-Character Region Awareness for Text Detection
-
+Focused on Japanese Text
 
 ## Objective
 
 - [X] Reproduce weak-supervision training as mentioned in the paper https://arxiv.org/pdf/1904.01941.pdf
-- [ ] Generate character bbox on all the popular data sets.
-- [ ] Expose pre-trained models with command line interface to synthesize results on custom images
+- [ ] Generate character bbox on all Datapile's data sets.
 
 
 ## Clone the repository
@@ -13,137 +12,98 @@
     git clone https://github.com/autonise/CRAFT-Remade.git
     cd CRAFT-Remade
 
-## Option 1: Conda Environment Installation
+### Option 1: Conda Environment Installation
     conda env create -f environment.yml
     conda activate craft
 
-## Option 2: Pip Installation
-    pip install -r requirements.txt
+### Option 2: Pip Installation
+    pip3 install -r requirements.txt
 
 ## Running on custom images
 
-Put the images inside a folder.
-<br>Get a pre-trained model from the pre-trained model list (Currently only strong supervision using SYNTH-Text available)
-<br>Run the command - 
-
-    python main.py synthesize --model=./model/final_model.pkl --folder=./input
-    
-## Results
-
-| Dataset | Recall | Precision | F-score |
-|---------|--------|-----------|---------|
-| ICDAR2013 | TBD | TBD | 0.7051(Improving) |
-| ICDAR2015 | TBD | TBD | TBD(Coming Soon) |
-| ICDAR2017 | TBD | TBD | TBD(Coming Soon) |
-| Total Text | TBD | TBD | TBD(Coming Soon) |
-| MS COCO | TBD | TBD | TBD(Coming Soon) |
-
+- Put the images inside a folder.
+- Get a pre-trained model from the pre-trained model list (Currently only strong supervision using SYNTH-Text available)
+- Run the command
+```bash
+python3 main.py synthesize --model=./model/final_model.pkl --folder=./input
+```
 ## Pre-trained models
 
 ### Strong Supervision
 
-SynthText(CRAFT Model) - https://drive.google.com/open?id=1QH0B-iQ1Ob2HkWCQ2bVCsLPwVSmbcSgN<br>
-SynthText(ResNet-UNet Model) - https://drive.google.com/file/d/1qnLM_iMnR1P_6OLoUoFtrReHe4bpFW3T<br>
-Original Model by authors - https://drive.google.com/open?id=1ZQE0tK9498RhLcXwYRgod4upmrYWdgl9<br>
-    
+- SynthText(CRAFT Model) - [download here](https://drive.google.com/file/d/1be4MtJMEcaolM-s4EMsCRUmJFg2pR2OI/view?usp=sharing)
+- SynthText(ResNet-UNet Model) - comming
+- Original Model by authors - [download here](https://drive.google.com/open?id=1ZQE0tK9498RhLcXwYRgod4upmrYWdgl9)
+
 ### Weak Supervision
 
-- [ ] ICDAR 2013 - https://drive.google.com/open?id=1hs1xoLuHwEqNUVAxsXqf2WOQZKhCcF3H
-- [ ] ICDAR 2015 - In Progress
-- [ ] ICDAR 2017 - yet_to_be_completed
-- [ ] Total Text - yet_to_be_completed
-- [ ] MS-COCO - yet_to_be_completed
-    
-## Pre-generated on popular data sets
+- [ ] Datapile - In Progress
 
-- [ ] ICDAR 2013 - In Progress
-- [ ] ICDAR 2015 - In Progress
-- [ ] ICDAR 2017 - yet_to_be_completed
-- [ ] Total Text - yet_to_be_completed
-- [ ] MS-COCO - yet_to_be_completed
-    
 ## How to train the model from scratch
 
 ### Strong Supervision on Synthetic dataset
 
-Download the pre-trained model on Synthetic dataset at https://drive.google.com/open?id=1qnLM_iMnR1P_6OLoUoFtrReHe4bpFW3T
-<br> Otherwise if you want to train from scratch
-<br> Run the command - 
-    
-    python main.py train_synth
-    
-<br> To test your model on SynthText, Run the command -
-    
-    python main.py test_synth --model /path/to/model
-    
+- Download the pre-trained model on Synthetic dataset at [here](https://drive.google.com/file/d/1be4MtJMEcaolM-s4EMsCRUmJFg2pR2OI/view?usp=sharing)
+- Otherwise if you want to train from scratch
+- Download my generated Japanese SynthText dataset at [here](https://drive.google.com/drive/folders/10WySKiBnO8WFU53Pt2QBQgY_GCBSZKWs?usp=sharing)
+- Run the command
+```bash
+python3 main.py train_synth
+```
+- To test your model on SynthText, Run the command
+```bash
+python3 main.py test_synth --model /path/to/model
+```
 ### Weak Supervision
 
 #### First Pre-Process your dataset
 
-*Currently Supported - [IC13, IC15]
+- The assumed structure of the dataset is
+```
+.
+├── generated (This folder will contain the weak-supervision intermediate targets)
+├── train
+│   ├── img_1.jpg
+│   ├── img_2.jpg
+│   ├── img_3.jpg
+│   ├── img_4.jpg
+│   └── img_5.jpg
+│   └── ...
+│   └── train_gt.json (This can be generated using the pre_process function described below)
+├── test
+│   ├── img_1.jpg
+│   ├── img_2.jpg
+│   ├── img_3.jpg
+│   ├── img_4.jpg
+│   └── img_5.jpg
+│   └── ...
+│   └── test_gt.json (This can be generated using the pre_process function described below)
+```
+- First convert datapile dataset to OCR only format using [datapile_to_onmt.py](src/utils/datapile_to_onmt.py) script
+- To generate the json files for Datapile
+```
+In config.py change the corresponding values
 
-The assumed structure of the dataset is
-
-    .
-    ├── Generated (This folder will contain the weak-supervision intermediate targets)
-    └── Images
-        ├── test
-        │   ├── img_1.jpg
-        │   ├── img_2.jpg
-        │   ├── img_3.jpg
-        │   ├── img_4.jpg
-        │   └── img_5.jpg
-        │   └── ...
-        ├── test_gt.json (This can be generated using the pre_process function described below)
-        ├── train
-        │   ├── img_1.jpg
-        │   ├── img_2.jpg
-        │   ├── img_3.jpg
-        │   ├── img_4.jpg
-        │   └── img_5.jpg
-        │   └── ...
-        └── train_gt.json (This can be generated using the pre_process function described below)
-
-To generate the json files for IC13 - 
-
-    In config.py change the corresponding values
-    
-    'ic13': {
-		'train': {
-			'target_json_path': None,  --> path to where you want the target json file (Images/train_gt.json)
-			'target_folder_path': None,  --> path to where you downloaded the train gt (ch2_training_localization_transcription_gt)
-		},
-		'test': {
-			'target_json_path': None,  --> path to where you want the target json file (Images/test_gt.json)
-			'target_folder_path': None,  --> path to where you downloaded the train gt (Challenge2_Test_Task1_GT)
-		}
-		
-Run the command - 
-	
-	python main.py pre_process --dataset IC13
-		
-To generate the json files for IC15 - 
-
-    In config.py change the corresponding values
-    
-    'ic15': {
-		'train': {
-			'target_json_path': None,  --> path to where you want the target json file (Images/train_gt.json)
-			'target_folder_path': None,  --> path to where you downloaded the train gt (ch4_training_localization_transcription_gt)
-		},
-		'test': {
-			'target_json_path': None,  --> path to where you want the target json file (Images/test_gt.json)
-			'target_folder_path': None,  --> path to where you downloaded the train gt (Challenge4_Test_Task1_GT)
-		}
-
-Run the command - 
-
-	python main.py pre_process --dataset IC15
+'datapile': {
+    'train': {
+        'target_json_name': 'train_gt.json',
+        'base_path': './input/datapile/train/',
+    },
+    'test': {
+        'target_json_name': 'test_gt.json',
+        'base_path': './input/datapile/test/',
+    }
+```
+- Run the command:
+```bash
+python3 main.py pre_process --dataset datapile
+```
 
 #### Second Train your model based on weak-supervision
+- Run the command
 
-<br> Run the command - 
+```bash
+python3 main.py weak_supervision --model /path/to/strong/supervision/model --iterations <num_of_iterations(20)>
+```
 
-    python main.py weak_supervision --model /path/to/strong/supervision/model --iterations <num_of_iterations(20)>
-    
-This will train the weak supervision model for the number of iterations you specified
+- This will train the weak supervision model for the number of iterations you specified
