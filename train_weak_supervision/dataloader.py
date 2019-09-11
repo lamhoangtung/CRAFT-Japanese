@@ -166,7 +166,7 @@ class DataLoaderMIX_JPN(data.Dataset):
             weak_supervision_affinity.astype(np.float32), \
             dataset_name, \
             text_target, \
-            random_item, \
+            str(random_item), \
             np.array([height, width])
 
     def __len__(self):
