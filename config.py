@@ -14,7 +14,7 @@ DataLoader_JPN_SYNTH_Train_Synthesis = '/mnt/data/linus/CRAFT-Remade/logs/train_
 
 DataLoader_Other_Synthesis = '/home/SharedData/Mayank/'+dataset_name+'/Save/'
 Other_Dataset_Path = os.path.join('./input/', dataset_name)
-save_path = '/home/SharedData/Mayank/Models/WeakSupervision/'+dataset_name
+save_path = os.path.join('./model/weak_supervision/', dataset_name)
 images_path = '/home/SharedData/Mayank/'+dataset_name+'/Images'
 target_path = os.path.join('./input', dataset_name, 'generated')
 
