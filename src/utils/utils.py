@@ -454,10 +454,9 @@ def calculate_fscore(pred, target, text_target, unknown='###', text_pred=None, t
 	"""
 	if len(target.shape) == 2:
 		target = np.expand_dims(target, axis=0)
+	if isinstance(text_target, str):
 		text_target = [text_target]
-		assert len(text_target) == target.shape[0], 'Some error in text target'
-	else:
-		assert len(text_target) == target.shape[0], 'Some error in text target'
+	assert len(text_target) == target.shape[0], 'Some error in text target'
 
 	if pred.shape[0] == target.shape[0] == 0:
 		return {

@@ -138,9 +138,6 @@ class DataLoaderMIX_JPN(data.Dataset):
                 image, character.copy(), affinity.copy())
             image = normalize_mean_variance(image).transpose(2, 0, 1)
             weights = [i for i in self.gt[random_item][1]['weights'].copy()]
-            print('---------------------')
-            print(self.gt[random_item][1])
-            print('---------------------')
             text_target = '#@#@#@'.join(self.gt[random_item][1]['text'])
 
             assert len(self.gt[random_item][1]['text']) == len(self.gt[random_item][1]['word_bbox']), \

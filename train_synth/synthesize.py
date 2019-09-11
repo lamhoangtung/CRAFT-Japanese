@@ -109,7 +109,6 @@ def synthesize(dataloader, model, base_path_affinity, base_path_character, base_
 def generate_next_targets(original_dim, output, image, base_target_path, image_name, annots, dataloader):
 	if 'datapile' in config.dataset_name:
 		image_name = image_name.split('/')[-1]
-		annots['text'] = [annots['text']]
 	max_dim = original_dim.max()
 	resizing_factor = 768 / max_dim
 	before_pad_dim = [int(original_dim[0] * resizing_factor), int(original_dim[1] * resizing_factor)]
