@@ -21,7 +21,7 @@ class DataLoaderMIX_JPN(data.Dataset):
     """
 
     def __init__(self, type_, iteration):
-        self.DEBUG = False
+        self.DEBUG = True
         self.type_ = type_
         self.dataset_path = config.DataLoader_JPN_SYNTH_dataset_path
         self.raw_dataset = h5py.File(self.dataset_path, 'r')
@@ -33,7 +33,7 @@ class DataLoaderMIX_JPN(data.Dataset):
 
         if config.prob_synth != 0:
             if self.DEBUG:
-                self.ids = self.ids[:1000]
+                self.ids = self.ids[:5]
 
             total_number = len(self.ids)
             train_images = int(total_number * 0.9)
@@ -49,12 +49,14 @@ class DataLoaderMIX_JPN(data.Dataset):
         for i in sorted(os.listdir(self.base_path_other_gt)):
             with open(self.base_path_other_gt+'/'+i, 'r') as f:
                 self.gt.append([i[:-5], json.load(f)])
+        if self.DEBUG:
+            self.gt = self.gt[:5]
 
     def __get_list_id__(self):
         return [file_id for file_id in self.raw_dataset['data']]
 
     def __getitem__(self, item_i):
-
+        height, width, channel = 0, 0, 0
         # noinspection PyArgumentList
         np.random.seed()
         check = np.random.uniform()
@@ -136,6 +138,9 @@ class DataLoaderMIX_JPN(data.Dataset):
                 image, character.copy(), affinity.copy())
             image = normalize_mean_variance(image).transpose(2, 0, 1)
             weights = [i for i in self.gt[random_item][1]['weights'].copy()]
+            print('---------------------')
+            print(self.gt[random_item][1])
+            print('---------------------')
             text_target = '#@#@#@'.join(self.gt[random_item][1]['text'])
 
             assert len(self.gt[random_item][1]['text']) == len(self.gt[random_item][1]['word_bbox']), \
@@ -154,6 +159,7 @@ class DataLoaderMIX_JPN(data.Dataset):
 
             # Get original word_bbox annotations
             dataset_name = 'datapile'
+
 
         return \
             image.astype(np.float32), \
@@ -382,6 +388,10 @@ class DataLoaderEvalOther_Datapile(data.Dataset):
 
         self.imnames = sorted(self.gt['annots'].keys())
         self.unknown = self.gt['unknown']
+
+        self.debug = True
+        if self.debug:
+            self.imnames = self.imnames[:5]
 
     def __getitem__(self, item):
         """

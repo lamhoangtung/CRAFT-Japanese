@@ -151,8 +151,14 @@ def get_weighted_character_target(generated_targets, original_annotation, unknow
 							type = list, shape = [num_words]
 		}
 	"""
-
-	original_annotation['bbox'] = np.array(original_annotation['bbox'], dtype=np.int64)[:, :, None, :]
+	bbox = np.array(original_annotation['bbox'])
+	if len(bbox.shape) == 2:
+		bbox = np.expand_dims(bbox, axis=0)
+		original_annotation['text'] = [original_annotation['text']]
+	# print(original_annotation['bbox'])
+	# print(original_annotation['text'])
+	# print(np.array(original_annotation['bbox']).shape)
+	original_annotation['bbox'] = np.array(bbox, dtype=np.int64)[:, :, None, :]
 	# Converting original annotations to the shape [num_words, 4, 1, 2]
 
 	assert len(original_annotation['bbox']) == len(original_annotation['text']), \
@@ -446,8 +452,12 @@ def calculate_fscore(pred, target, text_target, unknown='###', text_pred=None, t
 	:param threshold: overlap iou threshold over which we say the pair is positive
 	:return:
 	"""
-
-	assert len(text_target) == target.shape[0], 'Some error in text target'
+	if len(target.shape) == 2:
+		target = np.expand_dims(target, axis=0)
+		text_target = [text_target]
+		assert len(text_target) == target.shape[0], 'Some error in text target'
+	else:
+		assert len(text_target) == target.shape[0], 'Some error in text target'
 
 	if pred.shape[0] == target.shape[0] == 0:
 		return {
@@ -471,10 +481,11 @@ def calculate_fscore(pred, target, text_target, unknown='###', text_pred=None, t
 	for no, i in enumerate(pred):
 
 		found = False
-
+		# print('have {} target'.format(len(target)))
 		for j in range(len(target)):
 			if already_done[j]:
 				continue
+			# print('target[{}].shape = '.format(j), np.array(target[j]).shape)
 			iou = calc_iou(i, target[j])
 			if iou > threshold:
 				if check_text:
@@ -489,7 +500,6 @@ def calculate_fscore(pred, target, text_target, unknown='###', text_pred=None, t
 
 		if not found:
 			false_positive += 1
-
 	if text_target is not None:
 		true_positive = np.sum(already_done.astype(np.float32)[np.where(np.array(text_target) != unknown)[0]])
 	else:
