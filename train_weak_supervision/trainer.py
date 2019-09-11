@@ -112,7 +112,13 @@ def train(model, optimizer, iteration):
             text_target,
             item,
             original_dim) in enumerate(iterator):
-
+        temp = []
+        for index, dataset in enumerate(dataset_name):
+            if dataset != 'SYNTH':
+                temp.append(int(item[index]))
+            else:
+                 temp.append(item[index])
+        item = tuple(temp)
         if config.use_cuda:
             image, character_map, affinity_map = image.cuda(
             ), character_map.cuda(), affinity_map.cuda()
