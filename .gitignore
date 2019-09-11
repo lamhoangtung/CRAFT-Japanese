@@ -8,3 +8,4 @@ logs/
 *.pkl
 debug/
 .DS_Store
+.vscode/settings.json
