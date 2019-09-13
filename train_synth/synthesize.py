@@ -166,12 +166,15 @@ def generate_next_targets(original_dim, output, image, base_target_path, image_n
 
 	predicted_word_bbox = generated_targets['word_bbox'].copy()
 	# --------------- PostProcessing for creating the targets for the next iteration ---------------- #
-
+	print(annots['text'])
+	print(image_name)
 	generated_targets = get_weighted_character_target(
 		generated_targets, {'bbox': annots['bbox'], 'text': annots['text']},
 		dataloader.dataset.unknown,
-		config.threshold_fscore, config.weight_threshold)
-
+		config.threshold_fscore,
+		config.weight_threshold
+	)
+	print('--------------')
 	target_word_bbox = generated_targets['word_bbox'].copy()
 
 	f_score = calculate_fscore(

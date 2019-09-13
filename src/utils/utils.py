@@ -185,7 +185,6 @@ def get_weighted_character_target(generated_targets, original_annotation, unknow
 				break
 
 		if original_annotation['text'][orig_no] == unknown_symbol or len(original_annotation['text'][orig_no]) == 0:
-			print("hmmmm")
 			"""
 				If the current original annotation was predicted by the model but the text-annotation is not present 
 				then we create character bbox using predictions and give a weight of 0.5 to the word-bbox
