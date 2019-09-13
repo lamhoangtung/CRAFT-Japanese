@@ -33,7 +33,7 @@ class DataLoaderMIX_JPN(data.Dataset):
 
         if config.prob_synth != 0:
             if self.DEBUG:
-                self.ids = self.ids[:5]
+                self.ids = self.ids[:10]
 
             total_number = len(self.ids)
             train_images = int(total_number * 0.9)
@@ -50,7 +50,7 @@ class DataLoaderMIX_JPN(data.Dataset):
             with open(self.base_path_other_gt+'/'+i, 'r') as f:
                 self.gt.append([i[:-5], json.load(f)])
         if self.DEBUG:
-            self.gt = self.gt[:5]
+            self.gt = self.gt[:10]
 
     def __get_list_id__(self):
         return [file_id for file_id in self.raw_dataset['data']]
@@ -388,7 +388,7 @@ class DataLoaderEvalOther_Datapile(data.Dataset):
 
         self.debug = True
         if self.debug:
-            self.imnames = self.imnames[:5]
+            self.imnames = self.imnames[:10]
 
     def __getitem__(self, item):
         """
