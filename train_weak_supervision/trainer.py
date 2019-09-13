@@ -318,7 +318,7 @@ def test(model, iteration):
     os.makedirs(config.save_path + '/Test_'+str(iteration), exist_ok=True)
 
     dataloader = DataLoader(
-        DataLoaderEvalOther('test'),
+        DataLoaderEvalOther_Datapile('test'),
         batch_size=config.batch_size['test'],
         num_workers=config.num_workers['test'],
         shuffle=False, worker_init_fn=_init_fn
@@ -383,12 +383,14 @@ def test(model, iteration):
 
                 cv2.drawContours(cur_image, resize_bbox(original_dim[i], output[i], config)[
                                  'word_bbox'], -1, (0, 255, 0), 2)
-                cv2.drawContours(cur_image, np.array(
-                    annots[i]['bbox']), -1, (0, 0, 255), 2)
+                # import ipdb; ipdb.set_trace()
+                y_bb = np.array(annots[i]['bbox'])
+                if len(y_bb.shape) == 2:
+                    y_bb = np.array([[annots[i]['bbox']]])
+                cv2.drawContours(cur_image, y_bb, -1, (0, 0, 255), 2)
 
                 plt.imsave(
-                    config.save_path + '/Test_' +
-                    str(iteration) + '/' + image_name[i],
+                    os.path.join(config.save_path, 'test_'.format(iteration), image_name[i]),
                     cur_image.astype(np.uint8))
 
                 score_calc = calculate_fscore(
