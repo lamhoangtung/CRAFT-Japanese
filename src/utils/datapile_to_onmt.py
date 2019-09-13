@@ -25,7 +25,7 @@ def main(datapile_path, output_path='./input/datapile/'):
             "Can't found any .json label file")
 
     os.makedirs(output_path, exist_ok=True)
-    images_output_path = os.path.join(output_path, 'images', dataset_name)
+    images_output_path = os.path.join(output_path, 'images')
     os.makedirs(images_output_path, exist_ok=True)
 
     dataset = []
@@ -67,7 +67,7 @@ def main(datapile_path, output_path='./input/datapile/'):
                 # print('Saved', output_name)
                 # Sometimes the dict key might be `truelabel` or `true label`
                 dataset.append(
-                    {'image_path': '{}/{}'.format(dataset_name, output_name), 'label': each_region['region_attributes']['label']})
+                    {'image_path': output_name, 'label': each_region['region_attributes']['label']})
 
     print('Total cropped {} line for OCR.'.format(len(dataset)))
     output_label_path = os.path.join(output_path, '{}.json'.format(dataset_name))
