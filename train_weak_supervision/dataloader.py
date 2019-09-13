@@ -268,11 +268,8 @@ class DataLoaderMIX(data.Dataset):
 
         if check < config.prob_synth and self.type_ == 'train':
             # probability of picking a Synth-Text image vs Image from dataset
-
             random_item = np.random.randint(len(self.imnames))
-
             character = self.charBB[random_item].copy()
-
             image = plt.imread(self.base_path_synth+'/' +
                                self.imnames[random_item][0])  # Read the image
 
@@ -333,33 +330,22 @@ class DataLoaderMIX(data.Dataset):
             assert len(self.gt[random_item][1]['text']) == len(self.gt[random_item][1]['word_bbox']), \
                 'Length of word_bbox != Length of text'
 
-            # assert len(text_target.split('#@#@#@')) == len(self.gt[random_item][1]['word_bbox']), \
-            # 	'Some error in splitting'
-
-            # Generate character heatmap with weights
-            weight_character, weak_supervision_char = generate_target_others(
-                image.shape, character.copy(), weights.copy())
+            # Resize the image to (768, 768)
+            image, character, affinity = resize_generated(image, character.copy(), affinity.copy())
+            image = normalize_mean_variance(image).transpose(2, 0, 1)
+            weights = np.array(self.gt[random_item][1]['weights'])
+            text_target = '#@#@#@'.join(self.gt[random_item][1]['text'])
 
             # Generate affinity heatmap with weights
             weight_affinity, weak_supervision_affinity = generate_target_others(
                 image.shape, affinity.copy(), weights.copy())
 
-            # Get original word_bbox annotations
-            dataset_name = 'ICDAR'
+            # Generate character heatmap with weights
+            weight_character, weak_supervision_char = generate_target_others(
+                image.shape, character.copy(), weights[:, 0].tolist())
 
-        return \
-            image.astype(np.float32), \
-            weight_character.astype(np.float32), \
-            weight_affinity.astype(np.float32), \
-            weak_supervision_char.astype(np.float32), \
-            weak_supervision_affinity.astype(np.float32), \
-            dataset_name, \
-            text_target, \
-            random_item, \
-            np.array([height, width])
 
     def __len__(self):
-
         if self.type_ == 'train':
 
             return config.iterations
