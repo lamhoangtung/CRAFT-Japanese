@@ -27,7 +27,7 @@ def get_initial_model_optimizer(path):
 		from src.craft_model import CRAFT
 		model = CRAFT()
 		model = DataParallelModel(model)
-		saved_model = torch.load(path)
+		saved_model = torch.load(path, map_location='cpu')
 		if 'state_dict' in saved_model.keys():
 			model.load_state_dict(saved_model['state_dict'])
 		else:

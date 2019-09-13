@@ -155,9 +155,7 @@ def get_weighted_character_target(generated_targets, original_annotation, unknow
 	if len(bbox.shape) == 2:
 		bbox = np.expand_dims(bbox, axis=0)
 		original_annotation['text'] = [original_annotation['text']]
-	# print(original_annotation['bbox'])
-	# print(original_annotation['text'])
-	# print(np.array(original_annotation['bbox']).shape)
+
 	original_annotation['bbox'] = np.array(bbox, dtype=np.int64)[:, :, None, :]
 	# Converting original annotations to the shape [num_words, 4, 1, 2]
 
@@ -181,14 +179,13 @@ def get_weighted_character_target(generated_targets, original_annotation, unknow
 		found_no = -1
 
 		for no, gen_t in enumerate(generated_targets['word_bbox']):
-
 			if calc_iou(np.array(gen_t), np.array(orig_annot)) > threshold:
 				# If IOU between predicted and original word-bbox is > threshold then it is termed positive
 				found_no = no
 				break
 
 		if original_annotation['text'][orig_no] == unknown_symbol or len(original_annotation['text'][orig_no]) == 0:
-
+			print("hmmmm")
 			"""
 				If the current original annotation was predicted by the model but the text-annotation is not present 
 				then we create character bbox using predictions and give a weight of 0.5 to the word-bbox
@@ -206,7 +203,7 @@ def get_weighted_character_target(generated_targets, original_annotation, unknow
 			aligned_generated_targets['weights'][orig_no] = 0
 
 		elif found_no == -1:
-
+			print("Don't found")
 			"""
 				If the current original annotation was not predicted by the model then we create equi-spaced character
 				bbox and give a weight of 0.5 to the word-bbox
@@ -230,7 +227,7 @@ def get_weighted_character_target(generated_targets, original_annotation, unknow
 			weight = weighing_function(len(original_annotation['text'][orig_no]), len(generated_targets['characters'][found_no]))
 
 			if weight <= weight_threshold:
-
+				print("Too weak")
 				characters, affinity = cutter(orig_annot, len(original_annotation['text'][orig_no]))
 
 				aligned_generated_targets['characters'][orig_no] = characters

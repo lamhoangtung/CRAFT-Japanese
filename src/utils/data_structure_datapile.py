@@ -24,7 +24,7 @@ def preprocess_datapile(base_path, output_name):
         # print(os.path.join(base_path, 'images', sample['image_path']))
         height, width, _ = cv2.imread(os.path.join(
             base_path, 'images', sample['image_path'])).shape
-        line_bb = [[0, 0], [0, width], [height, width], [height, 0]]
+        line_bb = [[0, 0], [width, 0], [width, height], [0, height]]
         all_annots['annots'][image_name]['bbox'] = line_bb
         all_annots['annots'][image_name]['text'] = sample['label']
 
