@@ -4,9 +4,9 @@ Config containing all hardcoded parameters for training strong supervised model 
 from config import *
 
 
-num_cuda = "4"
+num_cuda = "0"
 save_path = './model'
-use_cuda = True
+use_cuda = False
 
 batch_size = {
 	'train': 4*len(num_cuda.split(',')),
@@ -14,8 +14,8 @@ batch_size = {
 }
 
 num_workers = {
-	'train': 1,
-	'test': 1
+	'train': 0,
+	'test': 0
 }
 
 pretrained = False
@@ -37,7 +37,7 @@ periodic_output = 3000
 periodic_save = 3000
 optimizer_iteration = 1
 
-visualize_generated = False
+visualize_generated = True
 
 weight_threshold = 0.5
 

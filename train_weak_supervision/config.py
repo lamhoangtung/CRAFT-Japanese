@@ -5,8 +5,8 @@ from config import *
 
 seed = 0
 
-use_cuda = True
-num_cuda = "0,1,2,3"
+use_cuda = False
+num_cuda = "0"
 
 prob_synth = 1/6
 
@@ -18,8 +18,8 @@ batch_size = {
 }
 
 num_workers = {
-	'train': 16,
-	'test': 16
+	'train': 0,
+	'test': 0
 }
 
 
