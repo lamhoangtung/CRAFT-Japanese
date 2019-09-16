@@ -243,7 +243,6 @@ def get_weighted_character_target(generated_targets, original_annotation, unknow
 			aligned_generated_targets['weights'][orig_no] = [0, 0]
 
 		elif found_no == -1:
-			print("Don't found")
 			"""
 				If the current original annotation was not predicted by the model then we create equi-spaced character
 				bbox and give a weight of 0.5 to the word-bbox

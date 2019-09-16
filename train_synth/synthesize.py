@@ -144,8 +144,8 @@ def synthesize(
 def generate_next_targets(original_dim, output, image, base_target_path, image_name, annots, dataloader, no):
 	if 'datapile' in config.dataset_name:
 		image_name = image_name.split('/')[-1]
-	visualize = config.visualize_generated and no % config.visualize_freq == 0 and no != 0
-
+	# visualize = config.visualize_generated and no % config.visualize_freq == 0 and no != 0
+	visualize = config.visualize_generated # Just for debuging
 	max_dim = original_dim.max()
 	resizing_factor = 768 / max_dim
 	before_pad_dim = [int(original_dim[0] * resizing_factor), int(original_dim[1] * resizing_factor)]
@@ -216,15 +216,12 @@ def generate_next_targets(original_dim, output, image, base_target_path, image_n
 
 	predicted_word_bbox = generated_targets['word_bbox'].copy()
 	# --------------- PostProcessing for creating the targets for the next iteration ---------------- #
-	print(annots['text'])
-	print(image_name)
 	generated_targets = get_weighted_character_target(
 		generated_targets, {'bbox': annots['bbox'], 'text': annots['text']},
 		dataloader.dataset.unknown,
 		config.threshold_fscore,
 		config.weight_threshold
 	)
-	print('--------------')
 	target_word_bbox = generated_targets['word_bbox'].copy()
 
 	f_score = calculate_fscore(

@@ -143,7 +143,7 @@ def train(model, optimizer, iteration):
     optimizer = change_lr(optimizer, config.lr[iteration])
 
     dataloader = DataLoader(
-        DataLoaderMIX('train', iteration),
+        DataLoaderMIX_JPN('train', iteration),
         batch_size=config.batch_size['train'],
         num_workers=config.num_workers['train'],
         shuffle=True, worker_init_fn=_init_fn,
@@ -388,9 +388,11 @@ def test(model, iteration):
                 if len(y_bb.shape) == 2:
                     y_bb = np.array([[annots[i]['bbox']]])
                 cv2.drawContours(cur_image, y_bb, -1, (0, 0, 255), 2)
-
+                
+                debug_path = os.path.join(config.save_path, 'test_{}'.format(iteration))
+                os.makedirs(debug_path, exist_ok=True)
                 plt.imsave(
-                    os.path.join(config.save_path, 'test_'.format(iteration), image_name[i]),
+                    os.path.join(debug_path, image_name[i]),
                     cur_image.astype(np.uint8))
 
                 score_calc = calculate_fscore(

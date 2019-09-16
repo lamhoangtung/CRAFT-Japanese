@@ -375,7 +375,7 @@ def generate_affinity(image_size, character_bbox, text, weight=None, debug=False
 			if debug:
 				target = add_order(
 					target, character_bbox[total_letters].copy(), character_bbox[total_letters+1].copy(), total_letters, total_letters+1)
-			target = add_affinity(target, character_bbox[total_letters].copy(
+			target, bbox = add_affinity(target, character_bbox[total_letters].copy(
 			), character_bbox[total_letters+1].copy())
 			total_letters += 1
 			all_affinity_bbox.append(bbox)

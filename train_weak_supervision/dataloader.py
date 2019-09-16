@@ -97,7 +97,6 @@ class DataLoaderMIX_JPN(data.Dataset):
             # Resize the image to (768, 768)
             image, character = resize(image, charBB.copy())
             image = normalize_mean_variance(image).transpose(2, 0, 1)
-
             # Generate character heatmap with weights
             weight_character, weak_supervision_char = generate_target(
                 image.shape, character.copy(), weight=1)
@@ -145,14 +144,14 @@ class DataLoaderMIX_JPN(data.Dataset):
 
             # assert len(text_target.split('#@#@#@')) == len(self.gt[random_item][1]['word_bbox']), \
             # 	'Some error in splitting'
-
+            
             # Generate character heatmap with weights
             weight_character, weak_supervision_char = generate_target_others(
-                image.shape, character.copy(), weights.copy())
+                image.shape, character.copy(), np.array(weights)[:, 0])
 
             # Generate affinity heatmap with weights
             weight_affinity, weak_supervision_affinity = generate_target_others(
-                image.shape, affinity.copy(), weights.copy())
+            image.shape, affinity.copy(), np.array(weights)[:, 0])
 
             # Get original word_bbox annotations
             dataset_name = 'datapile'
