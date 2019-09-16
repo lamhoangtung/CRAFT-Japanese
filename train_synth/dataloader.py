@@ -117,7 +117,7 @@ class DataLoaderSYNTH(data.Dataset):
             DataLoader for strong supervised training on Synth-Text
     """
 
-    DEBUG = True  # Make this True if you want to do a run on small set of Synth-Text
+    DEBUG = False  # Make this True if you want to do a run on small set of Synth-Text
 
     def __init__(self, type_):
 

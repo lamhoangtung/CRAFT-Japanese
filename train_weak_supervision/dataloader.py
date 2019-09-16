@@ -21,7 +21,7 @@ class DataLoaderMIX_JPN(data.Dataset):
     """
 
     def __init__(self, type_, iteration):
-        self.DEBUG = True
+        self.DEBUG = False
         self.type_ = type_
         self.dataset_path = config.DataLoader_JPN_SYNTH_dataset_path
         self.raw_dataset = h5py.File(self.dataset_path, 'r')
@@ -368,7 +368,7 @@ class DataLoaderEvalOther_Datapile(data.Dataset):
         self.imnames = sorted(self.gt['annots'].keys())
         self.unknown = self.gt['unknown']
 
-        self.debug = True
+        self.debug = False
         if self.debug:
             self.imnames = self.imnames[:10]
 
