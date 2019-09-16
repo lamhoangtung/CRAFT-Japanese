@@ -169,12 +169,9 @@ class DataLoaderMIX_JPN(data.Dataset):
             np.array([height, width])
 
     def __len__(self):
-
-        if self.type_ == 'train':
-
+        if self.type_ == 'train' and not self.DEBUG:
             return config.iterations
         else:
-
             return len(self.gt)
 
 

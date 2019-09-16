@@ -110,7 +110,7 @@ def train(model, optimizer, iteration):
     :param iteration: current iteration of weak-supervision
     :return: model, optimizer
     """
-
+    print('Calling this dup')
     def change_lr():
 
         # Change learning rate while training
@@ -131,7 +131,7 @@ def train(model, optimizer, iteration):
     iterator = tqdm(dataloader)
 
 
-def train(model, optimizer, iteration):
+def train(model, optimizer, iteration, tensorboard_writer):
     """
     Train the weak-supervised model iteratively
     :param model: Pre-trained model on SynthText
@@ -279,22 +279,28 @@ def train(model, optimizer, iteration):
             f_score = 0
             precision = 0
             recall = 0
-
+        loss_value = int(loss.item() * config.optimizer_iterations * 100000) / 100000
+        avg_loss_value = int(
+            np.array(all_loss)[-min(1000, len(all_loss)):].mean() * 100000) / 100000
         iterator.set_description(
-            'Loss:' + str(int(loss.item() * config.optimizer_iterations *
-                              100000) / 100000) + ' Iterations:[' + str(no)
+            'Loss:' + str(loss_value) + ' Iterations:[' + str(no)
             + '/' + str(len(iterator)) +
-            '] Average Loss:' + str(
-                int(np.array(all_loss)[-min(1000, len(all_loss)):].mean() * 100000) / 100000) +
+            '] Average Loss:' + str(avg_loss_value) +
             '| Average F-Score: ' + str(f_score) +
             '| Average Recall: ' + str(recall) +
             '| Average Precision: ' + str(precision)
         )
+        tensorboard_writer.add_scalars('loss/loss', {'loss': loss_value}, iteration*len(iterator)+no)
+        tensorboard_writer.add_scalars('lr', {'lr': config.lr[iteration]}, iteration*len(iterator)+no)
+        tensorboard_writer.add_scalars('loss/avg_loss', {'avg_loss': avg_loss_value}, iteration*len(iterator)+no)
+        tensorboard_writer.add_scalars('metric/train', {'avg_f_score': f_score,
+                                                             'avg_precision': recall,
+                                                             'avg_recall': precision}, iteration*len(iterator)+no)
 
         if (no + 1) % config.test_now == 0:
 
             del image, loss, affinity_weight, character_weight, affinity_map, character_map, output
-            print('\nF-score of testing: ', test(model, iteration), '\n')
+            print('\nF-score of testing: ', test(model, iteration, tensorboard_writer), '\n')
             model.train()
 
     if len(iterator) % config.optimizer_iterations != 0:
@@ -307,7 +313,7 @@ def train(model, optimizer, iteration):
     return model, optimizer, all_loss, all_f_score
 
 
-def test(model, iteration):
+def test(model, iteration, tensorboard_writer):
     """
     Test the weak-supervised model
     :param model: Pre-trained model on SynthText
@@ -422,5 +428,9 @@ def test(model, iteration):
                 + str(2*precision*recall/(precision + recall)))
 
         torch.cuda.empty_cache()
+        f_score = 2*precision*recall/(precision + recall)
+        tensorboard_writer.add_scalars('metric/test', {'test_f_score': f_score,
+                                                'test_precision': precision,
+                                                'test_recall': recall}, iteration)
 
-    return 2*precision*recall/(precision + recall), precision, recall
+    return f_score, precision, recall
