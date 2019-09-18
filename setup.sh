@@ -6,7 +6,7 @@ echo "Downloading SynthText Japanese dataset for strong supervision ..."
 cd input
 gdrive download 1NcMCuzh1MhgOOQJybxCJcfkNbD_d0w4z
 echo "Downloading Datapile dataset for weak supervision ..."
-gdrive download DATAPILE_DATASET_ZIPED_ID
+gdrive download 1Ua2KrUkTsxX0Nb5EG17eNgEopbz8fHWL
 unzip datapile.zip
 echo "Downloading pre-trained weight ..."
 cd ../model/
