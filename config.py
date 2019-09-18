@@ -6,7 +6,7 @@ seed = 0
 dataset_name = 'datapile'
 test_dataset_name = 'datapile'
 
-DataLoader_JPN_SYNTH_dataset_path = './input/synth_text/linus_JPN_2.h5'
+DataLoader_JPN_SYNTH_dataset_path = './input/linus_JPN_2.h5'
 DataLoader_JPN_SYNTH_Train_Synthesis = './logs/train_synthesis/'
 
 
