@@ -12,6 +12,7 @@ echo "Downloading pre-trained weight ..."
 cd ../model/
 gdrive download 1be4MtJMEcaolM-s4EMsCRUmJFg2pR2OI
 gdrive download 1ZQE0tK9498RhLcXwYRgod4upmrYWdgl9
+cd ..
 echo "Installing dependencies ..."
 pip3 install -r requirements.txt
 echo "Preprocessing dataset ..."
