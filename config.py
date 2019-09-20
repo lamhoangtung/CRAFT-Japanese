@@ -3,7 +3,7 @@ import math
 
 seed = 0
 
-dataset_name = 'datapile'
+dataset_name = 'toyota'
 test_dataset_name = 'datapile'
 
 DataLoader_JPN_SYNTH_dataset_path = './input/linus_JPN_2.h5'
