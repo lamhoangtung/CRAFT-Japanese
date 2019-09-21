@@ -2,3 +2,7 @@ cache.pkl
 model/*
 input/*
 Temporary/*
+.DS_Store
+*.pyc
+*.png
+runs/*

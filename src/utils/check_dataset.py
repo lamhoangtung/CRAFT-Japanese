@@ -2,7 +2,7 @@ import json
 import numpy as np
 import cv2
 
-base_path = '/home/SharedData/Mayank/ICDAR2015/Images/train_gt.json'
+base_path = 'input/toyota/train/train_gt.json'
 
 with open(base_path, 'r') as f:
 	gt = json.load(f)

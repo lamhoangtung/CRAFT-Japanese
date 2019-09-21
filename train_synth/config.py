@@ -18,8 +18,8 @@ num_workers = {
 }
 
 pretrained = True
-pretrained_path = '/home/SharedData/Mayank/Models/SYNTH/11999_model.pkl'
-pretrained_loss_plot_training = '/home/SharedData/Mayank/Models/SYNTH/loss_plot_training.npy'
+pretrained_path = './model/final_model.pkl'
+pretrained_loss_plot_training = './logs/loss_plot_training.npy'
 
 optimizer_iteration = 4//len(num_cuda.split(','))
 

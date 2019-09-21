@@ -435,7 +435,7 @@ def generate_target_others(image_size, character_bbox, weight, type_='char'):
 	for word_no in range(len(character_bbox)):
 
 		for i in range(character_bbox[word_no].shape[0]):
-
+			print(i, word_no)
 			target, weight_map = add_character_others(
 				target, weight_map, weight[word_no], character_bbox[word_no][i].copy()[:, 0, :], type_=type_)
 
