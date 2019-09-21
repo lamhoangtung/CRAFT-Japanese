@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from .data_manipulation import two_char_bbox_to_affinity
 import math
+import config
 
 
 def order_points(box):
@@ -29,7 +30,7 @@ def _init_fn(worker_id):
 	np.random.seed(0 + worker_id)
 
 
-def resize_bbox(original_dim, output, config):
+def resize_bbox(original_dim, output, config, horizontal_rect=False):
 
 	max_dim = original_dim.max()
 	resizing_factor = 768 / max_dim
@@ -58,6 +59,7 @@ def resize_bbox(original_dim, output, config):
 		affinity_threshold_upper=config.threshold_affinity_upper,
 		scaling_affinity=config.scale_affinity,
 		scaling_character=config.scale_character,
+		horizontal_rect=horizontal_rect,
 	)
 
 	generated_targets['word_bbox'] = generated_targets['word_bbox']*2
@@ -308,7 +310,8 @@ def generate_word_bbox(
 		character_threshold_upper,
 		affinity_threshold_upper,
 		scaling_character,
-		scaling_affinity
+		scaling_affinity,
+		horizontal_rect=False,
 	):
 
 	"""
@@ -324,6 +327,7 @@ def generate_word_bbox(
 	:param affinity_threshold_upper: Threshold above which we differentiate the affinity
 	:param scaling_character: how much to scale the character bbox
 	:param scaling_affinity: how much to scale the affinity bbox
+	:param horizontal_rect: Only to generate horizontal rectangles
 	:return: {
 		'word_bbox': word_bbox, type=np.array, dtype=np.int64, shape=[num_words, 4, 1, 2] ,
 		'characters': char_bbox, type=list of np.array, dtype=np.int64, shape=[num_words, num_characters, 4, 1, 2] ,
@@ -386,6 +390,14 @@ def generate_word_bbox(
 			rectangle = cv2.minAreaRect(np_contours)
 			box = cv2.boxPoints(rectangle)
 
+			if horizontal_rect:
+				new_box = np.zeros([4, 2], dtype=np.float32)
+				top, bottom, left, right = np.min(box[:, 0]), np.max(box[:, 0]), np.min(box[:, 1]), np.max(box[:, 1])
+				new_box[0] = np.array([left, top])
+				new_box[1] = np.array([right, top])
+				new_box[2] = np.array([right, bottom])
+				new_box[3] = np.array([left, bottom])
+
 			if Polygon(box).area == 0:
 				continue
 
@@ -406,8 +418,6 @@ def generate_word_bbox(
 			mapper.append(k)
 
 		except:
-			# ToDo - Understand why there is a ValueError: math domain error in line
-			#  niter = int(math.sqrt(size * min(w, h) / (w * h)) * 2)
 
 			continue
 
@@ -486,7 +496,11 @@ def generate_word_bbox_batch(
 		batch_affinity_heatmap,
 		character_threshold,
 		affinity_threshold,
-		word_threshold):
+		word_threshold,
+		character_threshold_upper,
+		affinity_threshold_upper,
+		scaling_character,
+		scaling_affinity):
 
 	"""
 
@@ -497,9 +511,13 @@ def generate_word_bbox_batch(
 									shape = [batch_size, height, width], value range [0, 1]
 	:param batch_affinity_heatmap: Batch Affinity Heatmap, numpy array, dtype=np.float32,
 									shape = [batch_size, height, width], value range [0, 1]
-	:param character_threshold: Threshold above which we say pixel belongs to a character
-	:param affinity_threshold: Threshold above which we say a pixel belongs to a affinity
+	:param character_threshold: Threshold above which we say pixel belongs to a word
+	:param affinity_threshold: Threshold above which we say a pixel belongs to a word
 	:param word_threshold: Threshold above which we say a group of characters compromise a word
+	:param character_threshold_upper: Threshold above which we say pixel belongs to a character
+	:param affinity_threshold_upper: Threshold above which we say pixel belongs to a affinity
+	:param scaling_character: Scale to stop the reducing dimension problem
+	:param scaling_affinity: Scale to stop the reducing dimension problem
 	:return: word_bbox
 	"""
 
@@ -513,7 +531,12 @@ def generate_word_bbox_batch(
 			batch_affinity_heatmap[i],
 			character_threshold,
 			affinity_threshold,
-			word_threshold)
+			word_threshold,
+			character_threshold_upper,
+			affinity_threshold_upper,
+			scaling_character,
+			scaling_affinity
+		)
 
 		word_bbox.append(returned['word_bbox'])
 

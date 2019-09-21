@@ -3,25 +3,35 @@ import numpy as np
 from shapely.geometry import Polygon
 import config
 
-# Done so that the edge has a value of ~ 0.4
-center = config.window//2
-gaussian_heatmap = np.zeros([config.window, config.window], dtype=np.float32)
 
-for i_ in range(config.window):
-	for j_ in range(config.window):
-		gaussian_heatmap[i_, j_] = 1 / 2 / np.pi / (config.sigma ** 2) * np.exp(
-			-1 / 2 * ((i_ - center) ** 2 + (j_ - center) ** 2) / (config.sigma ** 2))
+class GlobalVariables:
 
-gaussian_heatmap = (gaussian_heatmap / np.max(gaussian_heatmap) * 255).astype(np.uint8)
+	def __init__(self):
 
-gaussian_heatmap_aff = np.zeros([config.window, config.window], dtype=np.float32)
+		self.center = config.window//2
 
-for i_ in range(config.window):
-	for j_ in range(config.window):
-		gaussian_heatmap_aff[i_, j_] = 1 / 2 / np.pi / (config.sigma_aff ** 2) * np.exp(
-			-1 / 2 * ((i_ - center) ** 2 + (j_ - center) ** 2) / (config.sigma_aff ** 2))
+		self.gaussian_heatmap = np.zeros([config.window, config.window], dtype=np.float32)
 
-gaussian_heatmap_aff = (gaussian_heatmap_aff / np.max(gaussian_heatmap_aff) * 255).astype(np.uint8)
+		for i_ in range(config.window):
+			for j_ in range(config.window):
+				self.gaussian_heatmap[i_, j_] = 1 / 2 / np.pi / (config.sigma ** 2) * np.exp(
+					-1 / 2 * ((i_ - self.center) ** 2 + (j_ - self.center) ** 2) / (config.sigma ** 2))
+
+		self.gaussian_heatmap = (self.gaussian_heatmap / np.max(self.gaussian_heatmap) * 255).astype(np.uint8)
+		self.sigma_char = config.sigma
+
+		self.gaussian_heatmap_aff = np.zeros([config.window, config.window], dtype=np.float32)
+
+		for i_ in range(config.window):
+			for j_ in range(config.window):
+				self.gaussian_heatmap_aff[i_, j_] = 1 / 2 / np.pi / (config.sigma_aff ** 2) * np.exp(
+					-1 / 2 * ((i_ - self.center) ** 2 + (j_ - self.center) ** 2) / (config.sigma_aff ** 2))
+
+		self.gaussian_heatmap_aff = (self.gaussian_heatmap_aff / np.max(self.gaussian_heatmap_aff) * 255).astype(np.uint8)
+		self.sigma_aff = config.sigma_aff
+
+
+global_variables = GlobalVariables()
 
 
 def normalize_mean_variance(in_img, mean=(0.485, 0.456, 0.406), variance=(0.229, 0.224, 0.225)):
@@ -43,32 +53,33 @@ def denormalize_mean_variance(in_img, mean=(0.485, 0.456, 0.406), variance=(0.22
 	return img
 
 
-def four_point_transform(image, pts, size):
+def four_point_transform(image, bbox, size):
 
 	"""
 	Using the pts and the image a perspective transform is performed which returns the transformed 2d Gaussian image
 	:param image: np.array, dtype=np.uint8, shape = [height, width]
-	:param pts: np.array, dtype=np.float32 or np.int32, shape = [4, 2]
+	:param bbox: np.array, dtype=np.float32 or np.int32, shape = [4, 2]
 	:param size: size of the original image, list [height, width]
 	:return:
 	"""
 
-	height, width = size
+	try:
 
-	center_pt = np.mean(pts, axis=0)
-	pts = pts - center_pt[None, :]
-	pts = pts*center/config.threshold_point
-	pts = pts + center_pt[None, :]
+		height, width = size
 
-	dst = np.array([
-		[0, 0],
-		[image.shape[1] - 1, 0],
-		[image.shape[1] - 1, image.shape[0] - 1],
-		[0, image.shape[0] - 1]], dtype="float32")
+		dst = np.array([
+			[0, 0],
+			[image.shape[1] - 1, 0],
+			[image.shape[1] - 1, image.shape[0] - 1],
+			[0, image.shape[0] - 1]], dtype="float32")
 
-	warped = cv2.warpPerspective(image, cv2.getPerspectiveTransform(dst, pts), (width, height))
+		warped = cv2.warpPerspective(image, cv2.getPerspectiveTransform(dst, bbox), (width, height))
 
-	return warped
+		return warped
+
+	except:
+
+		return image
 
 
 def resize(image, character, side=768):
@@ -141,7 +152,7 @@ def resize_generated(image, character, affinity, side=768):
 	return big_image, character, affinity
 
 
-def add_character(image, bbox, heatmap=gaussian_heatmap):
+def add_character(image, bbox, heatmap):
 
 	"""
 		Add gaussian heatmap for character bbox to the image
@@ -151,22 +162,66 @@ def add_character(image, bbox, heatmap=gaussian_heatmap):
 		:return: image in which the gaussian character bbox has been added
 	"""
 
-	# ToDo - Make this function efficient
+	try:
 
-	if not Polygon(bbox.reshape([4, 2]).astype(np.int32)).is_valid:
+		if not Polygon(bbox.reshape([4, 2]).astype(np.int32)).is_valid:
+
+			return image
+
+		# Extending the bbox
+
+		center_pt = np.mean(bbox, axis=0)
+		bbox = bbox - center_pt[None, :]
+		bbox = bbox * global_variables.center / config.threshold_point
+		bbox = bbox + center_pt[None, :]
+
+		# Finding the minimum x and y of the bbox
+
+		top, left = np.min(bbox[:, 1]), np.min(bbox[:, 0])
+
+		bbox[:, 1] = bbox[:, 1] - top
+		bbox[:, 0] = bbox[:, 0] - left
+
+		height, width = np.max(bbox[:, 1]), np.max(bbox[:, 0])
+
+		int_height = int(height + 1)
+		int_width = int(width + 1)
+		int_top = int(top)
+		int_left = int(left)
+
+		image_top = min(max(0, int_top), image.shape[0])
+		image_left = min(max(0, int_left), image.shape[1])
+		image_bottom = min(max(0, int_top + int_height), image.shape[0])
+		image_right = min(max(0, int_left + int_width), image.shape[1])
+
+		transformed_top = min(max(0, -int_top), int_height)
+		transformed_left = min(max(0, -int_left), int_width)
+		transformed_bottom = max(0, min(int_height + int_top, image.shape[0]) - int_top)
+		transformed_right = max(0, min(int_width + int_left, image.shape[1]) - int_left)
+
+		transformed = four_point_transform(heatmap, bbox.astype(np.float32), [int_height, int_width])
+
+		if \
+			image_bottom - image_top == transformed_bottom - transformed_top and \
+			image_right - image_left == transformed_right - transformed_left:
+
+			image[image_top:image_bottom, image_left:image_right] = np.maximum(
+				image[image_top:image_bottom, image_left:image_right],
+				transformed[transformed_top:transformed_bottom, transformed_left:transformed_right]
+			)
+
+		else:
+			print(
+				'Some error in add character:',
+				(image_left, image_top, image_right, image_bottom),
+				(transformed_left, transformed_top, transformed_right, transformed_bottom)
+			)
 
 		return image
 
-	bbox_top_left = np.min(bbox, axis=0)
-	bbox_top_right = np.max(bbox, axis=0)
-
-
-
-	transformed = four_point_transform(heatmap, bbox.astype(np.float32), [image.shape[0], image.shape[1]])
-
-	image = np.maximum(image, transformed)
-
-	return image
+	except:
+		print('Some error add character')
+		return image
 
 
 def add_character_others(image, weight_map, weight_val, bbox, type_='char'):
@@ -181,19 +236,74 @@ def add_character_others(image, weight_map, weight_val, bbox, type_='char'):
 					weight_map in which the weight as per weak-supervision has been calculated
 	"""
 
-	# ToDo - Make this function efficient
+	try:
 
-	if type_ == 'char':
-		heatmap = gaussian_heatmap.copy()
-	else:
-		heatmap = gaussian_heatmap_aff.copy()
+		if type_ == 'char':
+			heatmap = global_variables.gaussian_heatmap.copy()
+		else:
+			heatmap = global_variables.gaussian_heatmap_aff.copy()
 
-	transformed = four_point_transform(
-		heatmap, bbox.astype(np.float32), [weight_map.shape[0], weight_map.shape[1]])
-	image = np.maximum(image, transformed)
-	weight_map = np.maximum(weight_map, np.float32(transformed >= config.THRESHOLD_POSITIVE*255)*weight_val)
+		# Extending the bbox
 
-	return image, weight_map
+		center_pt = np.mean(bbox, axis=0)
+		bbox = bbox - center_pt[None, :]
+		bbox = bbox * global_variables.center / config.threshold_point
+		bbox = bbox + center_pt[None, :]
+
+		# Finding the minimum x and y of the bbox
+
+		top, left = np.min(bbox[:, 1]), np.min(bbox[:, 0])
+
+		bbox[:, 1] = bbox[:, 1] - top
+		bbox[:, 0] = bbox[:, 0] - left
+
+		height, width = np.max(bbox[:, 1]), np.max(bbox[:, 0])
+
+		int_height = int(height + 1)
+		int_width = int(width + 1)
+		int_top = int(top)
+		int_left = int(left)
+
+		image_top = min(max(0, int_top), image.shape[0])
+		image_left = min(max(0, int_left), image.shape[1])
+		image_bottom = min(max(0, int_top + int_height), image.shape[0])
+		image_right = min(max(0, int_left + int_width), image.shape[1])
+
+		transformed_top = min(max(0, -int_top), int_height)
+		transformed_left = min(max(0, -int_left), int_width)
+		transformed_bottom = max(0, min(int_height + int_top, image.shape[0]) - int_top)
+		transformed_right = max(0, min(int_width + int_left, image.shape[1]) - int_left)
+
+		transformed = four_point_transform(heatmap, bbox.astype(np.float32), [int_height, int_width])
+
+		if \
+			image_bottom - image_top == transformed_bottom - transformed_top and \
+			image_right - image_left == transformed_right - transformed_left:
+
+			image[image_top:image_bottom, image_left:image_right] = np.maximum(
+				image[image_top:image_bottom, image_left:image_right],
+				transformed[transformed_top:transformed_bottom, transformed_left:transformed_right]
+			)
+			weight_map[image_top:image_bottom, image_left:image_right] = np.maximum(
+				weight_map[image_top:image_bottom, image_left:image_right],
+				np.float32(
+					transformed[transformed_top:transformed_bottom, transformed_left:transformed_right]
+					>= config.THRESHOLD_POSITIVE * 255) * weight_val
+			)
+
+		else:
+			print(
+				'Some error in add character:',
+				(image_left, image_top, image_right, image_bottom),
+				(transformed_left, transformed_top, transformed_right, transformed_bottom)
+			)
+
+		return image, weight_map
+
+	except:
+
+		print('Some error add character others')
+		return image, weight_map
 
 
 def add_affinity(image, bbox_1, bbox_2):
@@ -212,7 +322,7 @@ def add_affinity(image, bbox_1, bbox_2):
 
 	center_1, center_2 = np.mean(bbox_1, axis=0), np.mean(bbox_2, axis=0)
 
-	# ToDo - No guarantee that bbox is ordered, hence affinity can be wrong
+	# Note - The character bbox should be in the order tl, tr, br, bl
 
 	# Shifted the affinity so that adjacent affinity do not touch each other
 
@@ -223,7 +333,7 @@ def add_affinity(image, bbox_1, bbox_2):
 
 	affinity = np.array([tl, tr, br, bl])
 
-	return add_character(image, affinity, heatmap=gaussian_heatmap_aff), affinity
+	return add_character(image, affinity, heatmap=global_variables.gaussian_heatmap_aff), affinity
 
 
 def two_char_bbox_to_affinity(bbox_1, bbox_2):
@@ -294,7 +404,7 @@ def generate_target(image_size, character_bbox, weight=None):
 
 	for i in range(character_bbox.shape[0]):
 
-		target = add_character(target, character_bbox[i].copy())
+		target = add_character(target, character_bbox[i].copy(), global_variables.gaussian_heatmap)
 
 	if weight is not None:
 		return target/255, np.float32(target >= config.THRESHOLD_POSITIVE*255)
@@ -325,7 +435,7 @@ def generate_target_others(image_size, character_bbox, weight, type_='char'):
 	for word_no in range(len(character_bbox)):
 
 		for i in range(character_bbox[word_no].shape[0]):
-
+			print(i, word_no)
 			target, weight_map = add_character_others(
 				target, weight_map, weight[word_no], character_bbox[word_no][i].copy()[:, 0, :], type_=type_)
 

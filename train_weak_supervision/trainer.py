@@ -27,8 +27,6 @@ import cv2
 import torch
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = str(config.num_cuda)
-
 
 def save(no, dataset_name, output, image, character_map, affinity_map, character_weight, affinity_weight):
 
@@ -187,7 +185,7 @@ def train(model, optimizer, iteration, tensorboard_writer):
 
         if (no + 1) % config.change_lr == 0:
             optimizer = change_lr(
-                optimizer, config.lr[iteration]*(0.8**((no + 1)//config.change_lr - 1)))
+                optimizer, config.lr[iteration]*(0.9**((no + 1)//config.change_lr - 1)))
 
         output = model(image)
         loss = loss_criterian(
@@ -382,10 +380,8 @@ def test(model, iteration, tensorboard_writer):
                 height_pad = (768 - before_pad_dim[0]) // 2
                 width_pad = (768 - before_pad_dim[1]) // 2
 
-                cur_image = cv2.resize(
-                    cur_image[height_pad:height_pad + before_pad_dim[0],
-                              width_pad:width_pad + before_pad_dim[1]],
-                    (original_dim[i][1], original_dim[i][0]))
+                cv2.drawContours(cur_image, resize_bbox(original_dim[i], output[i], config, horizontal_rect=True)['word_bbox'], -1, (0, 255, 0), 2)
+                cv2.drawContours(cur_image, np.array(annots[i]['bbox']), -1, (0, 0, 255), 2)
 
                 cv2.drawContours(cur_image, resize_bbox(original_dim[i], output[i], config)[
                                  'word_bbox'], -1, (0, 255, 0), 2)

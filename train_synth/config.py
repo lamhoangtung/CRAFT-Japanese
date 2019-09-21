@@ -27,19 +27,20 @@ optimizer_iteration = 4//len(num_cuda.split(','))
 lr = {
 	1: 1e-4,
 	8000*optimizer_iteration: 5e-5,
-	16000*optimizer_iteration: 2e-5,
-	32000*optimizer_iteration: 1e-5,
-	48000*optimizer_iteration: 1e-6,
+	12000*optimizer_iteration: 1e-5,
+	16000*optimizer_iteration: 5e-6,
+	24000*optimizer_iteration: 1e-6,
+	36000*optimizer_iteration: 5e-7,
 }
 
-num_epochs_strong_supervision = 1.2
+num_epochs_strong_supervision = 1.5
 
 periodic_fscore = 300*optimizer_iteration
 periodic_output = 3000*optimizer_iteration
 periodic_save = 3000*optimizer_iteration
 
 visualize_generated = True
-visualize_freq = 21000
+visualize_freq = 200
 
 weight_threshold = 0.5
 

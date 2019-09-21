@@ -13,8 +13,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-os.environ['CUDA_VISIBLE_DEVICES'] = str(config.num_cuda)  # Specify which GPU you want to use
-
 
 def synthesize(
 		dataloader,
@@ -175,7 +173,7 @@ def generate_next_targets(original_dim, output, image, base_target_path, image_n
 		scaling_character=config.scale_character,
 		scaling_affinity=config.scale_affinity
 	)
-
+	print('generated word bbox')
 	generated_targets['word_bbox'] = generated_targets['word_bbox'] * 2
 	generated_targets['characters'] = [i * 2 for i in generated_targets['characters']]
 	generated_targets['affinity'] = [i * 2 for i in generated_targets['affinity']]
@@ -230,58 +228,59 @@ def generate_next_targets(original_dim, output, image, base_target_path, image_n
 			text_target=annots['text'],
 			unknown=dataloader.dataset.gt['unknown']
 		)['f_score']
-
+	print('done calculate f1 score')
 	if visualize:
+		print('visualizing')
 		image_i = denormalize_mean_variance(image.data.cpu().numpy().transpose(1, 2, 0))
 		image_i = cv2.resize(
 			image_i[height_pad:height_pad + before_pad_dim[0], width_pad:width_pad + before_pad_dim[1]],
 			(original_dim[1], original_dim[0])
 		)
-
+		print('1')
 		# Generated word_bbox after postprocessing
 		cv2.drawContours(
 			image_i,
 			generated_targets['word_bbox'], -1, (0, 255, 0), 2)
-
+		print('2')
 		# Saving word bbox after postprocessing
 		plt.imsave(
 			base_target_path + '_next_target/word_bbox/' + '.'.join(image_name.split('.')[:-1]) + '.png',
 			image_i)
-
+		print('3')
 		# Generate affinity heatmap after postprocessing
 		affinity_target, affinity_weight_map = generate_target_others(
 			(image_i.shape[0], image_i.shape[1]),
 			generated_targets['affinity'].copy(),
 			np.array(generated_targets['weights'])[:, 1])
-
+		print('4')
 		# Generate character heatmap after postprocessing
 		character_target, characters_weight_map = generate_target_others(
 			(image_i.shape[0], image_i.shape[1]),
 			generated_targets['characters'].copy(),
 			np.array(generated_targets['weights'])[:, 0])
-
+		print('5')
 		# Saving the affinity heatmap
 		plt.imsave(
 			base_target_path + '_next_target/affinity/' + '.'.join(image_name.split('.')[:-1]) + '.png',
 			affinity_target,
 			cmap='gray')
-
+		print('6')
 		# Saving the character heatmap
 		plt.imsave(
 			base_target_path + '_next_target/character/' + '.'.join(image_name.split('.')[:-1]) + '.png',
 			character_target, cmap='gray')
-
+		print('7')
 		# Saving the affinity weight map
 		plt.imsave(
 			base_target_path + '_next_target/affinity_weight/' + '.'.join(image_name.split('.')[:-1]) + '.png',
 			affinity_weight_map,
 			cmap='gray')
-
+		print('8')
 		# Saving the character weight map
 		plt.imsave(
 			base_target_path + '_next_target/character_weight/' + '.'.join(image_name.split('.')[:-1]) + '.png',
 			characters_weight_map, cmap='gray')
-
+		print('9')
 	# Saving the target for next iteration in json format
 
 	generated_targets['word_bbox'] = generated_targets['word_bbox'].tolist()
@@ -290,7 +289,7 @@ def generate_next_targets(original_dim, output, image, base_target_path, image_n
 
 	with open(base_target_path + '/' + image_name + '.json', 'w') as f:
 		json.dump(generated_targets, f)
-
+	print('end of generate_next_targets')
 	return f_score
 
 
@@ -313,7 +312,7 @@ def synthesize_with_score(dataloader, model, base_target_path):
 		mean_f_score = []
 
 		for no, (image, image_name, original_dim, item) in enumerate(iterator):
-
+			print(image_name)
 			annots = []
 
 			for i in item:
@@ -491,5 +490,4 @@ def generator_(base_target_path, model_path=None, model=None):
 
 		saved_model = torch.load(model_path)
 		model.load_state_dict(saved_model['state_dict'])
-
 	synthesize_with_score(infer_dataloader, model, base_target_path)

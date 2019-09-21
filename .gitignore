@@ -3,10 +3,7 @@ model/*
 input/*
 *.pyc
 Temporary/*
-logs/
-*.h5
-*.pkl
-debug/
 .DS_Store
-.vscode/settings.json
+*.pyc
+*.png
 runs/*

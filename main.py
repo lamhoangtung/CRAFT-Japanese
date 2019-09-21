@@ -33,7 +33,10 @@ def train_synth():
     :return: None
     """
 
-    from train_synth import train
+    import os
+    from train_synth import train, config
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(config.num_cuda)
     train.main()
 
 
@@ -46,7 +49,11 @@ def test_synth(model):
     :return: None
     """
 
-    from train_synth import test
+    import os
+    from train_synth import test, config
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(config.num_cuda)
+
     test.main(model)
 
 
@@ -61,10 +68,11 @@ def weak_supervision(model, iterations):
     :return: None
     """
 
-    from train_weak_supervision.__init__ import get_initial_model_optimizer, generate_target, train, save_model, test
-    import config
+    from train_weak_supervision.__init__ import get_initial_model_optimizer, generate_target, train, save_model, test, config
     from tensorboardX import SummaryWriter
     writer = SummaryWriter()
+    import os
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(config.num_cuda)
 
     # ToDo - Check the effects of using optimizer of Synth-Text or starting from a random optimizer
 
@@ -73,12 +81,12 @@ def weak_supervision(model, iterations):
                                                     for p in model.parameters() if p.requires_grad))
 
     """
-	Steps - 
-		1) Using the pre-trained model generate the targets
-		2) Fine-tune the model on icdar 2013 dataset using weak-supervision
-		3) Saving the model and again repeating process 1-3
-		4) Saving the final model	
-	"""
+    Steps -
+        1) Using the pre-trained model generate the targets
+        2) Fine-tune the model on icdar 2013 dataset using weak-supervision
+        3) Saving the model and again repeating process 1-3
+        4) Saving the final model
+    """
 
     for iteration in range(config.start_iteration, int(iterations)):
 
@@ -88,7 +96,8 @@ def weak_supervision(model, iterations):
             generate_target(model, iteration)
 
             print('Testing for iteration:', iteration)
-            f_score_test, precision_test, recall_test = test(model, iteration, writer)
+            f_score_test, precision_test, recall_test = test(
+                model, iteration, writer)
             print(
                 'Test Results for iteration:', iteration,
                 ' | F-score: ', f_score_test,
@@ -102,18 +111,22 @@ def weak_supervision(model, iterations):
 
         print('Saving for iteration:', iteration)
         save_model(model, optimizer, 'intermediate',
-            iteration, loss=loss, accuracy=accuracy)
+                   iteration, loss=loss, accuracy=accuracy)
         print('====================================')
 
     save_model(model, optimizer, 'final')
     writer.close()
 
+
 @main.command()
 @click.option('-model', '--model', help='Path to Model trained on SYNTH', required=True)
 @click.option('-folder', '--folder', help='Path to the image folder', required=True)
 def synthesize(model, folder):
+    from train_synth import synthesize, config
+    import os
 
-    from train_synth import synthesize
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(
+        config.num_cuda)  # Specify which GPU you want to use
 
     if model is None:
         print('Please Enter the model path')
@@ -123,23 +136,23 @@ def synthesize(model, folder):
 
     else:
         print('Will generate the Affinity Heatmap at: ',
-              '/'.join(folder.split('/')[:-1])+'/affinity_heatmap')
+            '/'.join(folder.split('/')[:-1])+'/affinity_heatmap')
         print('Will generate the Character Heatmap at: ',
-              '/'.join(folder.split('/')[:-1]) + '/character_heatmap')
+            '/'.join(folder.split('/')[:-1]) + '/character_heatmap')
         print('Will generate the Word Bbox at: ',
-              '/'.join(folder.split('/')[:-1]) + '/word_bbox')
+            '/'.join(folder.split('/')[:-1]) + '/word_bbox')
         print('Will generate the Character Bbox at: ',
-              '/'.join(folder.split('/')[:-1]) + '/character_bbox')
+            '/'.join(folder.split('/')[:-1]) + '/character_bbox')
         print('Will generate the Affinity Bbox at: ',
-              '/'.join(folder.split('/')[:-1]) + '/affinity_bbox')
+            '/'.join(folder.split('/')[:-1]) + '/affinity_bbox')
         print('Will generate the json annotations at: ',
-              '/'.join(folder.split('/')[:-1]) + '/json_annotations')
+            '/'.join(folder.split('/')[:-1]) + '/json_annotations')
 
         synthesize.main(
             folder,
             model_path=model,
             base_path_character='/'.join(folder.split('/')
-                                         [:-1])+'/character_heatmap',
+                                        [:-1])+'/character_heatmap',
             base_path_affinity='/'.join(folder.split('/')
                                         [:-1])+'/affinity_heatmap',
             base_path_bbox='/'.join(folder.split('/')[:-1])+'/word_bbox',
