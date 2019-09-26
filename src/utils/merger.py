@@ -52,7 +52,7 @@ def merge(datasets):
 					'dataset': dataset}
 
 			with open(base_path + '/Images/train_gt.json', 'w') as f:
-				json.dump(combined_gt_train, f)
+				json.dump(combined_gt_train, f, ensure_ascii=False, indent=4)
 
 			with open(dataset + '/Images/test_gt.json', 'r') as f:
 				gt_test = json.load(f)
@@ -71,7 +71,7 @@ def merge(datasets):
 				combined_gt_test["annots"][dataset + '_' + img] = {'bbox': gt_test["annots"][img]['bbox'], 'text': cleaned_text, 'dataset': dataset}
 
 			with open(base_path + '/Images/test_gt.json', 'w') as f:
-				json.dump(combined_gt_test, f)
+				json.dump(combined_gt_test, f, ensure_ascii=False, indent=4)
 
 	merge_image()
 	merge_gt()

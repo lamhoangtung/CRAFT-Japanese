@@ -58,7 +58,7 @@ def icdar2015_test(
 		all_annots['annots'][image_name]['text'] = cur_text
 
 	with open(output_path, 'w') as f:
-		json.dump(all_annots, f)
+		json.dump(all_annots, f, ensure_ascii=False, indent=4)
 
 
 def icdar2015_train(
@@ -119,7 +119,7 @@ def icdar2015_train(
 		all_annots['annots'][image_name]['text'] = cur_text
 
 	with open(output_path, 'w') as f:
-		json.dump(all_annots, f)
+		json.dump(all_annots, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":

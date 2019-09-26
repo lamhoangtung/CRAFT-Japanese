@@ -73,8 +73,10 @@ def clean_annots(base_path, base_image_path):
 
 # clean_images()
 with open('train_gt.json', 'w') as f:
-	json.dump(clean_annots(path_train_gt, path_train), f)
+	json.dump(clean_annots(path_train_gt, path_train),
+	          f, ensure_ascii=False, indent=4)
 
 
 with open('test_gt.json', 'w') as f:
-	json.dump(clean_annots(path_val_gt, path_val), f)
+	json.dump(clean_annots(path_val_gt, path_val),
+	          f, ensure_ascii=False, indent=4)

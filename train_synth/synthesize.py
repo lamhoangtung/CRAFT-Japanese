@@ -136,7 +136,7 @@ def synthesize(
 				predicted_bbox['affinity'] = [_.tolist() for _ in predicted_bbox['affinity']]
 
 				with open(base_path_json + '/' + '.'.join(image_name[i].split('.')[:-1])+'.json', 'w') as f:
-					json.dump(predicted_bbox, f)
+					json.dump(predicted_bbox, f, ensure_ascii=False, indent=4)
 
 
 def generate_next_targets(original_dim, output, image, base_target_path, image_name, annots, dataloader, no):
@@ -178,6 +178,7 @@ def generate_next_targets(original_dim, output, image, base_target_path, image_n
 	generated_targets['characters'] = [i * 2 for i in generated_targets['characters']]
 	generated_targets['affinity'] = [i * 2 for i in generated_targets['affinity']]
 
+	visualize = False
 	if visualize:
 
 		character_bbox = cv2.resize((character_bbox*255).astype(np.uint8), (original_dim[1], original_dim[0])) / 255
@@ -288,7 +289,7 @@ def generate_next_targets(original_dim, output, image, base_target_path, image_n
 	generated_targets['affinity'] = [word_i.tolist() for word_i in generated_targets['affinity']]
 
 	with open(base_target_path + '/' + image_name + '.json', 'w') as f:
-		json.dump(generated_targets, f)
+		json.dump(generated_targets, f, ensure_ascii=False, indent=4)
 	print('end of generate_next_targets')
 	return f_score
 
